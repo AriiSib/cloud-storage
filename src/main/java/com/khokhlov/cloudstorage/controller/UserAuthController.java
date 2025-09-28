@@ -1,8 +1,8 @@
 package com.khokhlov.cloudstorage.controller;
 
-import com.khokhlov.cloudstorage.controller.auth.AuthHelper;
-import com.khokhlov.cloudstorage.model.dto.RegisterUserRequest;
-import com.khokhlov.cloudstorage.model.dto.RegisterUserResponse;
+import com.khokhlov.cloudstorage.controller.auth.AuthService;
+import com.khokhlov.cloudstorage.model.dto.AuthRequest;
+import com.khokhlov.cloudstorage.model.dto.AuthResponse;
 import com.khokhlov.cloudstorage.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -22,16 +22,26 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserAuthController {
 
     private final UserService userService;
-    private final AuthHelper authHelper;
+    private final AuthService authService;
 
     @PostMapping("/sign-up")
-    public ResponseEntity<RegisterUserResponse> register(
-            @Valid @RequestBody RegisterUserRequest request,
+    public ResponseEntity<AuthResponse> register(
+            @Valid @RequestBody AuthRequest request,
             HttpServletRequest req,
             HttpServletResponse resp) {
 
         var response = userService.register(request);
-        authHelper.login(req, resp, request.username(), request.password());
+        authService.login(req, resp, request.username(), request.password());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponse> login(
+            @Valid @RequestBody AuthRequest request,
+            HttpServletRequest req,
+            HttpServletResponse resp) {
+
+        authService.login(req, resp, request.username(), request.password());
+        return ResponseEntity.status(HttpStatus.OK).body(new AuthResponse(request.username()));
     }
 }

@@ -2,8 +2,8 @@ package com.khokhlov.cloudstorage.service;
 
 import com.khokhlov.cloudstorage.exception.UsernameAlreadyUsedException;
 import com.khokhlov.cloudstorage.mapper.UserMapper;
-import com.khokhlov.cloudstorage.model.dto.RegisterUserRequest;
-import com.khokhlov.cloudstorage.model.dto.RegisterUserResponse;
+import com.khokhlov.cloudstorage.model.dto.AuthRequest;
+import com.khokhlov.cloudstorage.model.dto.AuthResponse;
 import com.khokhlov.cloudstorage.model.entity.User;
 import com.khokhlov.cloudstorage.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +23,7 @@ public class UserService implements UserDetailsService {
     private final UserMapper userMapper;
 
     @Transactional
-    public RegisterUserResponse register(RegisterUserRequest request) {
+    public AuthResponse register(AuthRequest request) {
         String username = request.username().trim().toLowerCase();
         if (userRepository.existsByUsername(username))
             throw new UsernameAlreadyUsedException(username);

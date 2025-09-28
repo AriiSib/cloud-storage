@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class AuthHelper {
+public class AuthService {
     private final AuthenticationManager authManager;
     private final SecurityContextRepository securityContextRepository;
     private final SessionAuthenticationStrategy sessionStrategy;

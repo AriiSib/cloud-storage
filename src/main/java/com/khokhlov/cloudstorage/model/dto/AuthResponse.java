@@ -1,6 +1,6 @@
 package com.khokhlov.cloudstorage.model.dto;
 
-public record RegisterUserResponse(
+public record AuthResponse(
         String username
 ) {
 }

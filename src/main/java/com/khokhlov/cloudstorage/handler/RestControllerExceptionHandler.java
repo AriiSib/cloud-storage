@@ -2,6 +2,7 @@ package com.khokhlov.cloudstorage.handler;
 
 import com.khokhlov.cloudstorage.exception.UsernameAlreadyUsedException;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -23,6 +24,12 @@ public class RestControllerExceptionHandler {
     @ExceptionHandler(UsernameAlreadyUsedException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     Map<String, String> onUsernameAlreadyUsed(UsernameAlreadyUsedException exception) {
+        return Map.of("message", exception.getMessage());
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    Map<String, String> onInvalidLoginOrPassword(BadCredentialsException exception) {
         return Map.of("message", exception.getMessage());
     }
 
