@@ -21,9 +21,12 @@ public class AuthService {
     public void login(HttpServletRequest request, HttpServletResponse response,
                       String username, String rawPassword) {
 
-        var authReq = UsernamePasswordAuthenticationToken.unauthenticated(username, rawPassword);
-        Authentication auth = authManager.authenticate(authReq);
+        Authentication auth = authManager.authenticate(
+                UsernamePasswordAuthenticationToken.unauthenticated(username, rawPassword)
+        );
 
+        // if there is no session, then will not work sessionStrategy.onAuthentication()
+        request.getSession(true);
         // change the ID session (for session-fixation attacks)
         sessionStrategy.onAuthentication(auth, request, response);
 
