@@ -1,5 +1,6 @@
 ext {
     versions = [
-            'mapstruct': '1.6.3'
+            'mapstruct': '1.6.3',
+            'minio'    : '8.6.0'
     ]
 }
