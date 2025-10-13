@@ -1,4 +1,4 @@
-package com.khokhlov.cloudstorage.exception;
+package com.khokhlov.cloudstorage.exception.auth;
 
 public class UsernameAlreadyUsedException extends RuntimeException {
     public UsernameAlreadyUsedException(String username) {

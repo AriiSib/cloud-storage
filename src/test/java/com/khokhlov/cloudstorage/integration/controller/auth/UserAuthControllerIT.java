@@ -1,7 +1,7 @@
 package com.khokhlov.cloudstorage.integration.controller.auth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.khokhlov.cloudstorage.exception.UsernameAlreadyUsedException;
+import com.khokhlov.cloudstorage.exception.auth.UsernameAlreadyUsedException;
 import com.khokhlov.cloudstorage.integration.service.IntegrationTestBase;
 import com.khokhlov.cloudstorage.model.dto.AuthRequest;
 import lombok.RequiredArgsConstructor;
