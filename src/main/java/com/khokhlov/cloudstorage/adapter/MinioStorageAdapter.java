@@ -4,8 +4,10 @@ import com.khokhlov.cloudstorage.exception.minio.StorageAccessException;
 import com.khokhlov.cloudstorage.exception.minio.StorageErrorResponseException;
 import com.khokhlov.cloudstorage.exception.minio.StorageException;
 import com.khokhlov.cloudstorage.exception.minio.StorageNotFoundException;
+import com.khokhlov.cloudstorage.model.dto.MinioResponse;
 import io.minio.*;
 import io.minio.errors.*;
+import io.minio.messages.Item;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -25,17 +27,29 @@ public class MinioStorageAdapter implements StoragePort {
     private final MinioClient minioClient;
 
     @Override
-    public boolean isObjectExists(String objectName) {
+    public boolean isDirectoryExists(String objectName) {
         try {
-            minioClient.statObject(
+            Iterable<Result<Item>> results = minioClient.listObjects(
+//                    ListObjectsArgs.builder().bucket(bucketName).recursive(true).build());
+                    ListObjectsArgs.builder().bucket(bucketName).prefix(objectName).build());
+            return results.iterator().hasNext();
+        } catch (Exception e) {
+            throw new StorageException(e.getMessage());
+        }
+    }
+
+    @Override
+    public MinioResponse checkObject(String objectName) {
+        try {
+            StatObjectResponse response = minioClient.statObject(
                     StatObjectArgs.builder()
                             .bucket(bucketName)
                             .object(objectName)
                             .build());
-            return true;
+            return new MinioResponse(response.size());
         } catch (ErrorResponseException e) {
-            if (e.getMessage().equals("Object does not exist"))
-                return false;
+            if ((e).errorResponse().code().equals("NoSuchKey"))
+                return null;
             throw new StorageNotFoundException(e.getMessage());
         } catch (Exception e) {
             throw new StorageException(e.getMessage());

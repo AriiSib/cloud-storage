@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.khokhlov.cloudstorage.model.entity.FileType;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public record UploadResponse(
+public record ResourceResponse(
         String path,
         String name,
         Long size,

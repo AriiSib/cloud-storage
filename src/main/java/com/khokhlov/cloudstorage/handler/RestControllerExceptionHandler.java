@@ -2,6 +2,7 @@ package com.khokhlov.cloudstorage.handler;
 
 import com.khokhlov.cloudstorage.exception.minio.StorageAlreadyExistsException;
 import com.khokhlov.cloudstorage.exception.auth.UsernameAlreadyUsedException;
+import com.khokhlov.cloudstorage.exception.minio.StorageNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -51,7 +52,7 @@ public class RestControllerExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    Map<String, Object> onInvalid(MethodArgumentNotValidException exception) {
+    Map<String, Object> onInvalidRequest(MethodArgumentNotValidException exception) {
         var fieldErrors = exception.getBindingResult()
                 .getFieldErrors()
                 .stream()
@@ -61,6 +62,12 @@ public class RestControllerExceptionHandler {
                         (first, second) -> first
                 ));
         return Map.of("message", fieldErrors);
+    }
+
+    @ExceptionHandler(StorageNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    Map<String, String> onResourceNotFound(Exception exception) {
+        return Map.of("message", exception.getMessage());
     }
 
     @ExceptionHandler({
