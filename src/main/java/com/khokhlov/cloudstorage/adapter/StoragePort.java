@@ -3,6 +3,7 @@ package com.khokhlov.cloudstorage.adapter;
 import com.khokhlov.cloudstorage.model.dto.MinioResponse;
 
 import java.io.InputStream;
+import java.util.List;
 
 public interface StoragePort {
 
@@ -11,4 +12,6 @@ public interface StoragePort {
     MinioResponse checkObject(String objectName);
 
     boolean isDirectoryExists(String objectName);
+
+    List<String> listObjects(String userRoot);
 }

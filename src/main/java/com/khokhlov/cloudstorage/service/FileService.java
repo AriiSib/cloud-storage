@@ -7,18 +7,14 @@ import com.khokhlov.cloudstorage.facade.CurrentUser;
 import com.khokhlov.cloudstorage.mapper.ResourceMapper;
 import com.khokhlov.cloudstorage.model.dto.MinioResponse;
 import com.khokhlov.cloudstorage.model.dto.ResourceResponse;
-import com.khokhlov.cloudstorage.model.entity.FileType;
+import com.khokhlov.cloudstorage.util.PathUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import static com.khokhlov.cloudstorage.model.entity.FileType.*;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -28,65 +24,95 @@ public class FileService {
     private final StoragePort storage;
     private final ResourceMapper resourceMapper;
 
-    public ResourceResponse checkResource(String path) {
+    public ResourceResponse checkResource(String relPath) {
         Long userId = currentUser.getCurrentUserId();
-        String normalizedPath = normalizePath(userId, path, "");
-        FileType type = getType(normalizedPath);
-        if (type == DIRECTORY) {
-            if (!storage.isDirectoryExists(normalizedPath)) {
-                throw new StorageNotFoundException("Resource not found");
-            } else {
-                return resourceMapper.toResponse(path, null);
-            }
-        }
-        MinioResponse storageObject = storage.checkObject(normalizedPath);
-        if (storageObject == null)
-            throw new StorageNotFoundException("Resource not found");
-        long size = storageObject.size();
+        String objectName = normalizePath(userId, relPath, "");
+        boolean isDir = objectName.endsWith("/");
 
-        return resourceMapper.toResponse(path, size);
+        if (isDir) {
+            if (!storage.isDirectoryExists(objectName))
+                throw new StorageNotFoundException("Resource not found");
+            return resourceMapper.toResponse(objectName, null);
+        } else {
+            MinioResponse meta = storage.checkObject(objectName);
+            if (meta == null)
+                throw new StorageNotFoundException("Resource not found");
+            return resourceMapper.toResponse(objectName, meta.size());
+        }
     }
 
-    public List<ResourceResponse> upload(String path, List<MultipartFile> files) {
+    public List<ResourceResponse> searchResource(String query) {
         Long userId = currentUser.getCurrentUserId();
-        checkFileExists(userId, path, files);
+        query = query.toLowerCase().trim();
+        String userRoot = getUserRoot(userId);
+        List<String> objects = storage.listObjects(userRoot);
+        if (objects.isEmpty())
+            throw new StorageNotFoundException("Resource not found");
 
         List<ResourceResponse> responses = new ArrayList<>();
+        Set<String> uniqDir = new LinkedHashSet<>();
 
+        for (String objectName : objects) {
+            String relPath = objectName.substring(userRoot.length());
+
+            String fileName = PathUtil.getFileName(relPath);
+            if (fileName.toLowerCase(Locale.ROOT).contains(query)) {
+                responses.add(checkResource(relPath));
+            }
+
+            String[] parts = relPath.split("/");
+            StringBuilder parent = new StringBuilder();
+            for (int i = 0; i < parts.length - 1; i++) {
+                String currentDir = parts[i];
+                if (currentDir.toLowerCase(Locale.ROOT).contains(query)) {
+                    String matchDir = parent + currentDir + "/";
+                    if (uniqDir.add(matchDir)) {
+                        responses.add(resourceMapper.toResponse(matchDir, null));
+                    }
+                }
+                parent.append(currentDir).append("/");
+            }
+        }
+        if (responses.isEmpty())
+            throw new StorageNotFoundException("Resource not found");
+
+        return responses;
+    }
+
+    public List<ResourceResponse> upload(String relPath, List<MultipartFile> files) {
+        Long userId = currentUser.getCurrentUserId();
         for (MultipartFile file : files) {
             String filename = file.getOriginalFilename();
-            String normalizedPath = normalizePath(userId, path, filename);
+            String objectName = normalizePath(userId, relPath, filename);
+            if (storage.checkObject(objectName) != null)
+                throw new StorageAlreadyExistsException(filename);
+        }
+
+        List<ResourceResponse> responses = new ArrayList<>();
+        for (MultipartFile file : files) {
+            String filename = file.getOriginalFilename();
+            String objectName = normalizePath(userId, relPath, filename);
             long size = file.getSize();
             String contentType = Optional.ofNullable(file.getContentType())
                     .filter(value -> !value.isEmpty())
                     .orElse("application/octet-stream");
 
             try (InputStream stream = file.getInputStream()) {
-                storage.save(normalizedPath, stream, size, contentType);
+                storage.save(objectName, stream, size, contentType);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            path = path + filename;
-            responses.add(resourceMapper.toResponse(path, size));
+            responses.add(resourceMapper.toResponse(objectName, size));
         }
 
         return responses;
     }
 
-    private void checkFileExists(Long userId, String path, List<MultipartFile> files) {
-        for (MultipartFile file : files) {
-            String filename = file.getOriginalFilename();
-            String normalizedPath = normalizePath(userId, path, filename);
-            if (storage.checkObject(normalizedPath) != null)
-                throw new StorageAlreadyExistsException(filename);
-        }
+    private String normalizePath(Long userId, String relPath, String fileName) {
+        return getUserRoot(userId) + relPath + fileName;
     }
 
-    private String normalizePath(Long userId, String path, String fileName) {
-        return "user-" + userId + "-files/" + path + fileName;
-    }
-
-    private FileType getType(String path) {
-        return path.endsWith("/") ? DIRECTORY : FILE;
+    private String getUserRoot(Long userId) {
+        return "user-" + userId + "-files/";
     }
 }

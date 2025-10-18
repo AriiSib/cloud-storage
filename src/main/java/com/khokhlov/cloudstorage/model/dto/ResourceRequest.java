@@ -11,10 +11,10 @@ public record ResourceRequest(
                 regexp = """
                          (?x)
                           ^                                   # start
-                          (?!/)                               # not starting with /
+                          (?!/)                               # not starting with '/'
                           (?!.*//)                            # no double slashes
                           (?!.*(?:^|/)\\.{2}(?:/|$))          # no '..' as a segment
-                          (?:[\\p{L}\\p{N}._\\- ]+/)*         # 0+ directory segments (may contain spaces)
+                          (?:[\\p{L}\\p{N}._\\- ]+/)*         # 0+ directory segments
                           [\\p{L}\\p{N}._\\- ]+/?             # last: file OR dir (optional trailing '/')
                           $                                   # end
                         """,

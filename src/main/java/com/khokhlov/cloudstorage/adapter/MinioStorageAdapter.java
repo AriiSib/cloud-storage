@@ -16,6 +16,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -27,11 +30,34 @@ public class MinioStorageAdapter implements StoragePort {
     private final MinioClient minioClient;
 
     @Override
+    public List<String> listObjects(String userRoot) {
+        try {
+            Iterable<Result<Item>> results = minioClient.listObjects(
+                    ListObjectsArgs.builder()
+                            .bucket(bucketName)
+                            .prefix(userRoot)
+                            .recursive(true)
+                            .maxKeys(100)
+                            .build());
+            if (!results.iterator().hasNext()) return Collections.emptyList();
+            List<String> items = new ArrayList<>();
+            for (Result<Item> result : results) {
+                items.add(result.get().objectName());
+            }
+            return items;
+        } catch (Exception e) {
+            throw new StorageException(e.getMessage());
+        }
+    }
+
+    @Override
     public boolean isDirectoryExists(String objectName) {
         try {
             Iterable<Result<Item>> results = minioClient.listObjects(
-//                    ListObjectsArgs.builder().bucket(bucketName).recursive(true).build());
-                    ListObjectsArgs.builder().bucket(bucketName).prefix(objectName).build());
+                    ListObjectsArgs.builder()
+                            .bucket(bucketName)
+                            .prefix(objectName)
+                            .build());
             return results.iterator().hasNext();
         } catch (Exception e) {
             throw new StorageException(e.getMessage());

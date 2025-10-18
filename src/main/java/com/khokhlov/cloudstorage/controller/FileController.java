@@ -26,6 +26,12 @@ public class FileController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+    @GetMapping(value = "/resource/search")
+    public ResponseEntity<?> searchResource(@Valid @ModelAttribute(name = "query") ResourceRequest query) {
+        List<ResourceResponse> response = fileService.searchResource(query.path());
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
     @PostMapping(value = "/resource", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> upload(@Valid @ModelAttribute UploadRequest request,
                                     @RequestPart(name = "file") List<MultipartFile> file) {
