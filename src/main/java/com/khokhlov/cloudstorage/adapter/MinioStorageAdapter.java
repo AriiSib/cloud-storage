@@ -36,7 +36,6 @@ public class MinioStorageAdapter implements StoragePort {
                             .bucket(bucketName)
                             .prefix(userRoot)
                             .recursive(true)
-                            .maxKeys(100)
                             .build());
             if (!results.iterator().hasNext()) return Collections.emptyList();
             List<String> items = new ArrayList<>();
@@ -92,6 +91,24 @@ public class MinioStorageAdapter implements StoragePort {
                             .contentType(contentType)
                             .build()
             );
+        } catch (ErrorResponseException | InvalidResponseException e) {
+            throw new StorageErrorResponseException(e.getMessage());
+        } catch (InsufficientDataException | InternalException | IOException | NoSuchAlgorithmException |
+                 ServerException | XmlParserException e) {
+            throw new StorageException(e.getMessage());
+        } catch (InvalidKeyException e) {
+            throw new StorageAccessException(e.getMessage());
+        }
+    }
+
+    @Override
+    public InputStream download(String objectName) {
+        try {
+            return minioClient.getObject(
+                    GetObjectArgs.builder()
+                            .bucket(bucketName)
+                            .object(objectName)
+                            .build());
         } catch (ErrorResponseException | InvalidResponseException e) {
             throw new StorageErrorResponseException(e.getMessage());
         } catch (InsufficientDataException | InternalException | IOException | NoSuchAlgorithmException |

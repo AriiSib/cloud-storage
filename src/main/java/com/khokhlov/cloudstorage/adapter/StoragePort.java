@@ -9,6 +9,8 @@ public interface StoragePort {
 
     void save(String normalizedPath, InputStream inputStream, long size, String contentType);
 
+    InputStream download(String objectName);
+
     MinioResponse checkObject(String objectName);
 
     boolean isDirectoryExists(String objectName);

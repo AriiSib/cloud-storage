@@ -5,16 +5,21 @@ import com.khokhlov.cloudstorage.exception.minio.StorageAlreadyExistsException;
 import com.khokhlov.cloudstorage.exception.minio.StorageNotFoundException;
 import com.khokhlov.cloudstorage.facade.CurrentUser;
 import com.khokhlov.cloudstorage.mapper.ResourceMapper;
+import com.khokhlov.cloudstorage.model.dto.DownloadResponse;
 import com.khokhlov.cloudstorage.model.dto.MinioResponse;
 import com.khokhlov.cloudstorage.model.dto.ResourceResponse;
 import com.khokhlov.cloudstorage.util.PathUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ContentDisposition;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @Service
 @RequiredArgsConstructor
@@ -106,6 +111,56 @@ public class FileService {
         }
 
         return responses;
+    }
+
+    public DownloadResponse download(String path) {
+        Long userId = currentUser.getCurrentUserId();
+        String userRoot = getUserRoot(userId);
+        String objectName = userRoot + path;
+        boolean isDir = path.endsWith("/");
+        if (isDir) {
+            if (!storage.isDirectoryExists(objectName))
+                throw new StorageNotFoundException("Resource not found");
+            else {
+                List<String> objects = storage.listObjects(objectName);
+                String zipName = PathUtil.getDirName(path) + ".zip";
+                ContentDisposition contentDisposition = ContentDisposition.attachment()
+                        .filename(zipName).build();
+
+                StreamingResponseBody body = out -> {
+                    try (ZipOutputStream zip = new ZipOutputStream(out)) {
+                        for (String filePath : objects) {
+                            String relPath = filePath.substring(userRoot.length());
+                            String entryName = relPath.substring(path.length());
+                            ZipEntry entry = new ZipEntry(entryName);
+                            zip.putNextEntry(entry);
+                            try (InputStream in = storage.download(filePath)) {
+                                in.transferTo(zip);
+                            }
+                            zip.closeEntry();
+                        }
+                    }
+                };
+
+                return new DownloadResponse(body, contentDisposition);
+            }
+        } else {
+            MinioResponse meta = storage.checkObject(objectName);
+            if (meta == null)
+                throw new StorageNotFoundException("Resource not found");
+
+            StreamingResponseBody body = out -> {
+                try (InputStream in = storage.download(objectName)) {
+                    in.transferTo(out);
+                }
+            };
+
+            String fileName = PathUtil.getFileName(path);
+            ContentDisposition contentDisposition = ContentDisposition.attachment()
+                    .filename(fileName).build();
+
+            return new DownloadResponse(body, contentDisposition);
+        }
     }
 
     public void delete(String relPath) {

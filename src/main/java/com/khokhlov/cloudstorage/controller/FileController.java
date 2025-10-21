@@ -4,12 +4,11 @@ import com.khokhlov.cloudstorage.model.dto.*;
 import com.khokhlov.cloudstorage.service.FileService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.util.List;
 
@@ -41,6 +40,16 @@ public class FileController {
         }
         List<ResourceResponse> response = fileService.upload(request.path(), file);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping(value = "/resource/download")
+    public ResponseEntity<StreamingResponseBody> download(@Valid @ModelAttribute ResourceRequest request) {
+        DownloadResponse response = fileService.download(request.path());
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, response.contentDisposition().toString())
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(response.body());
     }
 
     @DeleteMapping(value = "/resource")
