@@ -14,4 +14,6 @@ public interface StoragePort {
     boolean isDirectoryExists(String objectName);
 
     List<String> listObjects(String userRoot);
+
+    void delete(List<String> objectNames);
 }

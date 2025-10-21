@@ -1,12 +1,11 @@
 package com.khokhlov.cloudstorage.adapter;
 
-import com.khokhlov.cloudstorage.exception.minio.StorageAccessException;
-import com.khokhlov.cloudstorage.exception.minio.StorageErrorResponseException;
-import com.khokhlov.cloudstorage.exception.minio.StorageException;
-import com.khokhlov.cloudstorage.exception.minio.StorageNotFoundException;
+import com.khokhlov.cloudstorage.exception.minio.*;
 import com.khokhlov.cloudstorage.model.dto.MinioResponse;
 import io.minio.*;
 import io.minio.errors.*;
+import io.minio.messages.DeleteError;
+import io.minio.messages.DeleteObject;
 import io.minio.messages.Item;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -100,6 +99,32 @@ public class MinioStorageAdapter implements StoragePort {
             throw new StorageException(e.getMessage());
         } catch (InvalidKeyException e) {
             throw new StorageAccessException(e.getMessage());
+        }
+    }
+
+    @Override
+    public void delete(List<String> objectNames) {
+        List<DeleteObject> objects = new ArrayList<>();
+        for (String objectName : objectNames) {
+            objects.add(new DeleteObject(objectName));
+        }
+        List<StorageDeleteFailedException.Failure> failures = new ArrayList<>();
+        try {
+            Iterable<Result<DeleteError>> results =
+                    minioClient.removeObjects(
+                            RemoveObjectsArgs.builder()
+                                    .bucket(bucketName)
+                                    .objects(objects)
+                                    .build());
+            for (Result<DeleteError> result : results) {
+                DeleteError error = result.get();
+                failures.add(new StorageDeleteFailedException.Failure(error.objectName(), error.message()));
+            }
+        } catch (Exception e) {
+            throw new StorageException(e.getMessage());
+        }
+        if (!failures.isEmpty()) {
+            throw new StorageDeleteFailedException(failures);
         }
     }
 

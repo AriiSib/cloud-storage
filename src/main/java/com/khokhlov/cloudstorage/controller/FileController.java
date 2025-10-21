@@ -21,13 +21,13 @@ public class FileController {
     private final FileService fileService;
 
     @GetMapping(value = "/resource")
-    public ResponseEntity<?> checkResource(@Valid @ModelAttribute ResourceRequest request) {
+    public ResponseEntity<?> check(@Valid @ModelAttribute ResourceRequest request) {
         ResourceResponse response = fileService.checkResource(request.path());
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @GetMapping(value = "/resource/search")
-    public ResponseEntity<?> searchResource(@Valid @ModelAttribute(name = "query") ResourceRequest query) {
+    public ResponseEntity<?> search(@Valid @ModelAttribute(name = "query") ResourceRequest query) {
         List<ResourceResponse> response = fileService.searchResource(query.path());
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
@@ -41,5 +41,11 @@ public class FileController {
         }
         List<ResourceResponse> response = fileService.upload(request.path(), file);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @DeleteMapping(value = "/resource")
+    public ResponseEntity<?> delete(@Valid @ModelAttribute ResourceRequest request) {
+        fileService.delete(request.path());
+        return ResponseEntity.noContent().build();
     }
 }

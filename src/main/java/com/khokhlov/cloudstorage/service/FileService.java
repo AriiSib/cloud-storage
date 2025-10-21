@@ -63,14 +63,14 @@ public class FileService {
             String[] parts = relPath.split("/");
             StringBuilder parent = new StringBuilder();
             for (int i = 0; i < parts.length - 1; i++) {
-                String currentDir = parts[i];
+                String currentDir = parts[i] + "/";
                 if (currentDir.toLowerCase(Locale.ROOT).contains(query)) {
-                    String matchDir = parent + currentDir + "/";
+                    String matchDir = parent + currentDir;
                     if (uniqDir.add(matchDir)) {
                         responses.add(resourceMapper.toResponse(matchDir, null));
                     }
                 }
-                parent.append(currentDir).append("/");
+                parent.append(currentDir);
             }
         }
         if (responses.isEmpty())
@@ -108,6 +108,25 @@ public class FileService {
         return responses;
     }
 
+    public void delete(String relPath) {
+        Long userId = currentUser.getCurrentUserId();
+        String objectName = normalizePath(userId, relPath, "");
+        boolean isDir = relPath.endsWith("/");
+        if (isDir) {
+            if (!storage.isDirectoryExists(objectName)) {
+                throw new StorageNotFoundException("Resource not found");
+            } else {
+                List<String> objectsToDelete = storage.listObjects(objectName);
+                storage.delete(objectsToDelete);
+                return;
+            }
+        } else if (storage.checkObject(objectName) == null) {
+            throw new StorageNotFoundException("Resource not found");
+        }
+
+        storage.delete(List.of(objectName));
+    }
+
     private String normalizePath(Long userId, String relPath, String fileName) {
         return getUserRoot(userId) + relPath + fileName;
     }
@@ -115,4 +134,5 @@ public class FileService {
     private String getUserRoot(Long userId) {
         return "user-" + userId + "-files/";
     }
+
 }

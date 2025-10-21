@@ -2,6 +2,7 @@ package com.khokhlov.cloudstorage.handler;
 
 import com.khokhlov.cloudstorage.exception.minio.StorageAlreadyExistsException;
 import com.khokhlov.cloudstorage.exception.auth.UsernameAlreadyUsedException;
+import com.khokhlov.cloudstorage.exception.minio.StorageDeleteFailedException;
 import com.khokhlov.cloudstorage.exception.minio.StorageNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
@@ -17,6 +18,7 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -66,8 +68,18 @@ public class RestControllerExceptionHandler {
 
     @ExceptionHandler(StorageNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    Map<String, String> onResourceNotFound(Exception exception) {
+    Map<String, String> onResourceNotFound(StorageNotFoundException exception) {
         return Map.of("message", exception.getMessage());
+    }
+
+    @ExceptionHandler(StorageDeleteFailedException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    Map<String, Map<String, String>> onDeleteResourcesNotFound(StorageDeleteFailedException exception) {
+        Map<String, String> errors = new HashMap<>();
+        for (var missing : exception.getFailures()) {
+            errors.put(missing.object(), missing.message());
+        }
+        return Map.of("message", errors);
     }
 
     @ExceptionHandler({
