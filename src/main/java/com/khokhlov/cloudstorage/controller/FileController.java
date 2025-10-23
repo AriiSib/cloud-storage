@@ -1,6 +1,11 @@
 package com.khokhlov.cloudstorage.controller;
 
-import com.khokhlov.cloudstorage.model.dto.*;
+import com.khokhlov.cloudstorage.model.dto.request.DirectoryRequest;
+import com.khokhlov.cloudstorage.model.dto.request.RenameOrMoveRequest;
+import com.khokhlov.cloudstorage.model.dto.request.ResourceRequest;
+import com.khokhlov.cloudstorage.model.dto.request.UploadRequest;
+import com.khokhlov.cloudstorage.model.dto.response.DownloadResponse;
+import com.khokhlov.cloudstorage.model.dto.response.ResourceResponse;
 import com.khokhlov.cloudstorage.service.FileService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,9 +25,15 @@ public class FileController {
     private final FileService fileService;
 
     @GetMapping(value = "/resource")
-    public ResponseEntity<?> check(@Valid @ModelAttribute ResourceRequest request) {
+    public ResponseEntity<?> checkResource(@Valid @ModelAttribute ResourceRequest request) {
         ResourceResponse response = fileService.checkResource(request.path());
         return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping(value = "/directory")
+    public ResponseEntity<?> checkDirectory(@Valid @ModelAttribute DirectoryRequest request) {
+        List<ResourceResponse> response = fileService.checkDirectory(request.path());
+        return ResponseEntity.ok().body(response);
     }
 
     @GetMapping(value = "/resource/search")

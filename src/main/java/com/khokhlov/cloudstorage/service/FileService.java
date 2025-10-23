@@ -6,9 +6,9 @@ import com.khokhlov.cloudstorage.exception.minio.StorageException;
 import com.khokhlov.cloudstorage.exception.minio.StorageNotFoundException;
 import com.khokhlov.cloudstorage.facade.CurrentUser;
 import com.khokhlov.cloudstorage.mapper.ResourceMapper;
-import com.khokhlov.cloudstorage.model.dto.DownloadResponse;
-import com.khokhlov.cloudstorage.model.dto.MinioResponse;
-import com.khokhlov.cloudstorage.model.dto.ResourceResponse;
+import com.khokhlov.cloudstorage.model.dto.response.DownloadResponse;
+import com.khokhlov.cloudstorage.model.dto.response.MinioResponse;
+import com.khokhlov.cloudstorage.model.dto.response.ResourceResponse;
 import com.khokhlov.cloudstorage.util.PathUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ContentDisposition;
@@ -47,11 +47,24 @@ public class FileService {
         }
     }
 
+    public List<ResourceResponse> checkDirectory(String relPath) {
+        Long userId = currentUser.getCurrentUserId();
+        String objectName = normalizePath(userId, relPath, "");
+        if (!storage.isResourceExists(objectName)) throw new StorageNotFoundException("Resource not found");
+        List<ResourceResponse> responses = new ArrayList<>();
+        List<String> objects = storage.listObjects(objectName, false);
+        for (String object : objects) {
+            responses.add(checkResource(PathUtil.stripUserRoot(object)));
+        }
+        return responses;
+
+    }
+
     public List<ResourceResponse> searchResource(String query) {
         Long userId = currentUser.getCurrentUserId();
         query = query.toLowerCase().trim();
         String userRoot = getUserRoot(userId);
-        List<String> objects = storage.listObjects(userRoot);
+        List<String> objects = storage.listObjects(userRoot, true);
         if (objects.isEmpty())
             throw new StorageNotFoundException("Resource not found");
 
@@ -162,7 +175,7 @@ public class FileService {
             if (!storage.isResourceExists(objectName))
                 throw new StorageNotFoundException("Resource not found");
             else {
-                List<String> objects = storage.listObjects(objectName);
+                List<String> objects = storage.listObjects(objectName, true);
                 String zipName = PathUtil.getDirName(path) + ".zip";
                 ContentDisposition contentDisposition = ContentDisposition.attachment()
                         .filename(zipName).build();
@@ -211,7 +224,7 @@ public class FileService {
             if (!storage.isResourceExists(objectName)) {
                 throw new StorageNotFoundException("Resource not found");
             } else {
-                List<String> objectsToDelete = storage.listObjects(objectName);
+                List<String> objectsToDelete = storage.listObjects(objectName, true);
                 storage.delete(objectsToDelete);
                 return;
             }

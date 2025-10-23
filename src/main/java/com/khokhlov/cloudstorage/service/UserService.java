@@ -2,8 +2,8 @@ package com.khokhlov.cloudstorage.service;
 
 import com.khokhlov.cloudstorage.exception.auth.UsernameAlreadyUsedException;
 import com.khokhlov.cloudstorage.mapper.UserMapper;
-import com.khokhlov.cloudstorage.model.dto.AuthRequest;
-import com.khokhlov.cloudstorage.model.dto.AuthResponse;
+import com.khokhlov.cloudstorage.model.dto.request.AuthRequest;
+import com.khokhlov.cloudstorage.model.dto.response.AuthResponse;
 import com.khokhlov.cloudstorage.model.entity.User;
 import com.khokhlov.cloudstorage.repository.UserRepository;
 import lombok.RequiredArgsConstructor;

@@ -1,6 +1,6 @@
 package com.khokhlov.cloudstorage.adapter;
 
-import com.khokhlov.cloudstorage.model.dto.MinioResponse;
+import com.khokhlov.cloudstorage.model.dto.response.MinioResponse;
 
 import java.io.InputStream;
 import java.util.List;
@@ -19,7 +19,7 @@ public interface StoragePort {
 
     boolean isResourceExists(String objectName);
 
-    List<String> listObjects(String userRoot);
+    List<String> listObjects(String userRoot, boolean recursive);
 
     void delete(List<String> objectNames);
 }

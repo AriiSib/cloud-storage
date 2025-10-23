@@ -1,7 +1,7 @@
 package com.khokhlov.cloudstorage.adapter;
 
 import com.khokhlov.cloudstorage.exception.minio.*;
-import com.khokhlov.cloudstorage.model.dto.MinioResponse;
+import com.khokhlov.cloudstorage.model.dto.response.MinioResponse;
 import io.minio.*;
 import io.minio.errors.*;
 import io.minio.messages.DeleteError;
@@ -29,26 +29,6 @@ public class MinioStorageAdapter implements StoragePort {
     private final MinioClient minioClient;
 
     @Override
-    public List<String> listObjects(String userRoot) {
-        try {
-            Iterable<Result<Item>> results = minioClient.listObjects(
-                    ListObjectsArgs.builder()
-                            .bucket(bucketName)
-                            .prefix(userRoot)
-                            .recursive(true)
-                            .build());
-            if (!results.iterator().hasNext()) return Collections.emptyList();
-            List<String> items = new ArrayList<>();
-            for (Result<Item> result : results) {
-                items.add(result.get().objectName());
-            }
-            return items;
-        } catch (Exception e) {
-            throw new StorageException(e.getMessage());
-        }
-    }
-
-    @Override
     public boolean isResourceExists(String objectName) {
         try {
             Iterable<Result<Item>> results = minioClient.listObjects(
@@ -57,6 +37,26 @@ public class MinioStorageAdapter implements StoragePort {
                             .prefix(objectName)
                             .build());
             return results.iterator().hasNext();
+        } catch (Exception e) {
+            throw new StorageException(e.getMessage());
+        }
+    }
+
+    @Override
+    public List<String> listObjects(String userRoot, boolean recursive) {
+        try {
+            Iterable<Result<Item>> results = minioClient.listObjects(
+                    ListObjectsArgs.builder()
+                            .bucket(bucketName)
+                            .prefix(userRoot)
+                            .recursive(recursive)
+                            .build());
+            if (!results.iterator().hasNext()) return Collections.emptyList();
+            List<String> items = new ArrayList<>();
+            for (Result<Item> result : results) {
+                items.add(result.get().objectName());
+            }
+            return items;
         } catch (Exception e) {
             throw new StorageException(e.getMessage());
         }
@@ -84,7 +84,7 @@ public class MinioStorageAdapter implements StoragePort {
     public void renameOrMove(String objectNameFrom, String objectNameTo) {
         List<String> objects;
         if (objectNameFrom.endsWith("/")) {
-            objects = listObjects(objectNameFrom);
+            objects = listObjects(objectNameFrom, true);
             for (String from : objects) {
                 String to = from.replace(objectNameFrom, objectNameTo);
                 copy(from, to);
