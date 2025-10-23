@@ -11,6 +11,8 @@ public interface StoragePort {
 
     void copy(String from, String to);
 
+    void createDirectory(String objectName);
+
     void renameOrMove(String objectNameFrom, String objectNameTo);
 
     InputStream download(String objectName);

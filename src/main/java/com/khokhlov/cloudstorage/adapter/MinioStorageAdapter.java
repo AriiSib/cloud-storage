@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.InvalidKeyException;
@@ -108,6 +109,25 @@ public class MinioStorageAdapter implements StoragePort {
                                             .bucket(bucketName)
                                             .object(from)
                                             .build())
+                            .build());
+        } catch (ErrorResponseException | InvalidResponseException e) {
+            throw new StorageErrorResponseException(e.getMessage());
+        } catch (InsufficientDataException | InternalException | IOException | NoSuchAlgorithmException |
+                 ServerException | XmlParserException e) {
+            throw new StorageException(e.getMessage());
+        } catch (InvalidKeyException e) {
+            throw new StorageAccessException(e.getMessage());
+        }
+    }
+
+    @Override
+    public void createDirectory(String objectName) {
+        try {
+            minioClient.putObject(
+                    PutObjectArgs.builder()
+                            .bucket(bucketName)
+                            .object(objectName)
+                            .stream(new ByteArrayInputStream(new byte[]{}), 0, -1)
                             .build());
         } catch (ErrorResponseException | InvalidResponseException e) {
             throw new StorageErrorResponseException(e.getMessage());

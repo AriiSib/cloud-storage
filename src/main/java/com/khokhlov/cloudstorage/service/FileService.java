@@ -47,6 +47,16 @@ public class FileService {
         }
     }
 
+    public ResourceResponse createDirectory(String relPath) {
+        Long userId = currentUser.getCurrentUserId();
+        String objectName = normalizePath(userId, relPath, "");
+        String parentPath = objectName.replace(PathUtil.getDirName(relPath) + "/", "");
+        if (!storage.isResourceExists(parentPath)) throw new StorageNotFoundException("Parent directory not exist");
+        if (storage.isResourceExists(objectName)) throw new StorageAlreadyExistsException(PathUtil.getDirName(relPath));
+        storage.createDirectory(objectName);
+        return resourceMapper.toResponse(objectName, null);
+    }
+
     public List<ResourceResponse> checkDirectory(String relPath) {
         Long userId = currentUser.getCurrentUserId();
         String objectName = normalizePath(userId, relPath, "");

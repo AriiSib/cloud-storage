@@ -36,6 +36,12 @@ public class FileController {
         return ResponseEntity.ok().body(response);
     }
 
+    @PostMapping(value = "/directory")
+    public ResponseEntity<?> createDirectory(@Valid @ModelAttribute DirectoryRequest request) {
+        ResourceResponse response = fileService.createDirectory(request.path());
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
     @GetMapping(value = "/resource/search")
     public ResponseEntity<?> search(@Valid @ModelAttribute(name = "query") ResourceRequest query) {
         List<ResourceResponse> response = fileService.searchResource(query.path());
