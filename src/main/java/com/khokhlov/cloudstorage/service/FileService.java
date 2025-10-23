@@ -2,6 +2,7 @@ package com.khokhlov.cloudstorage.service;
 
 import com.khokhlov.cloudstorage.adapter.StoragePort;
 import com.khokhlov.cloudstorage.exception.minio.StorageAlreadyExistsException;
+import com.khokhlov.cloudstorage.exception.minio.StorageException;
 import com.khokhlov.cloudstorage.exception.minio.StorageNotFoundException;
 import com.khokhlov.cloudstorage.facade.CurrentUser;
 import com.khokhlov.cloudstorage.mapper.ResourceMapper;
@@ -35,7 +36,7 @@ public class FileService {
         boolean isDir = objectName.endsWith("/");
 
         if (isDir) {
-            if (!storage.isDirectoryExists(objectName))
+            if (!storage.isResourceExists(objectName))
                 throw new StorageNotFoundException("Resource not found");
             return resourceMapper.toResponse(objectName, null);
         } else {
@@ -84,6 +85,45 @@ public class FileService {
         return responses;
     }
 
+    public ResourceResponse renameOrMove(String pathFrom, String pathTo) {
+        Long userId = currentUser.getCurrentUserId();
+        if (pathFrom.equals(pathTo)) throw new StorageAlreadyExistsException("");
+
+        String objectNameFrom = normalizePath(userId, pathFrom, "");
+        String objectNameTo = normalizePath(userId, pathTo, "");
+
+        if (!storage.isResourceExists(objectNameFrom)) throw new StorageNotFoundException("Resource not found");
+        boolean isDirFrom = objectNameFrom.endsWith("/");
+        boolean isDirTo = objectNameTo.endsWith("/");
+
+        if (isDirFrom || isDirTo) {
+            if (!isDirFrom || !isDirTo) throw new StorageException("Passed paths to different resources");
+            return renameOrMoveDir(objectNameFrom, objectNameTo);
+        } else {
+            return renameOrMoveFile(objectNameFrom, objectNameTo);
+        }
+    }
+
+    private ResourceResponse renameOrMoveFile(String objectNameFrom, String objectNameTo) {
+        if (storage.isResourceExists(objectNameTo))
+            throw new StorageAlreadyExistsException(PathUtil.getFileName(objectNameTo));
+        MinioResponse meta = storage.checkObject(objectNameFrom);
+        if (meta == null) throw new StorageNotFoundException("Resource not found");
+        storage.renameOrMove(objectNameFrom, objectNameTo);
+        return resourceMapper.toResponse(objectNameTo, meta.size());
+    }
+
+    private ResourceResponse renameOrMoveDir(String objectNameFrom, String objectNameTo) {
+        String dirNameFrom = PathUtil.getDirName(objectNameFrom);
+        String dirNameTo = PathUtil.getDirName(objectNameTo);
+
+        if (storage.isResourceExists(objectNameTo + dirNameFrom))
+            throw new StorageAlreadyExistsException(dirNameTo);
+
+        storage.renameOrMove(objectNameFrom, objectNameTo);
+        return resourceMapper.toResponse(objectNameTo, null);
+    }
+
     public List<ResourceResponse> upload(String relPath, List<MultipartFile> files) {
         Long userId = currentUser.getCurrentUserId();
         for (MultipartFile file : files) {
@@ -119,7 +159,7 @@ public class FileService {
         String objectName = userRoot + path;
         boolean isDir = path.endsWith("/");
         if (isDir) {
-            if (!storage.isDirectoryExists(objectName))
+            if (!storage.isResourceExists(objectName))
                 throw new StorageNotFoundException("Resource not found");
             else {
                 List<String> objects = storage.listObjects(objectName);
@@ -168,7 +208,7 @@ public class FileService {
         String objectName = normalizePath(userId, relPath, "");
         boolean isDir = relPath.endsWith("/");
         if (isDir) {
-            if (!storage.isDirectoryExists(objectName)) {
+            if (!storage.isResourceExists(objectName)) {
                 throw new StorageNotFoundException("Resource not found");
             } else {
                 List<String> objectsToDelete = storage.listObjects(objectName);

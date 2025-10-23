@@ -49,7 +49,7 @@ public class MinioStorageAdapter implements StoragePort {
     }
 
     @Override
-    public boolean isDirectoryExists(String objectName) {
+    public boolean isResourceExists(String objectName) {
         try {
             Iterable<Result<Item>> results = minioClient.listObjects(
                     ListObjectsArgs.builder()
@@ -77,6 +77,45 @@ public class MinioStorageAdapter implements StoragePort {
             throw new StorageNotFoundException(e.getMessage());
         } catch (Exception e) {
             throw new StorageException(e.getMessage());
+        }
+    }
+
+    @Override
+    public void renameOrMove(String objectNameFrom, String objectNameTo) {
+        List<String> objects;
+        if (objectNameFrom.endsWith("/")) {
+            objects = listObjects(objectNameFrom);
+            for (String from : objects) {
+                String to = from.replace(objectNameFrom, objectNameTo);
+                copy(from, to);
+            }
+        } else {
+            copy(objectNameFrom, objectNameTo);
+            objects = List.of(objectNameFrom);
+        }
+        delete(objects);
+    }
+
+    @Override
+    public void copy(String from, String to) {
+        try {
+            minioClient.copyObject(
+                    CopyObjectArgs.builder()
+                            .bucket(bucketName)
+                            .object(to)
+                            .source(
+                                    CopySource.builder()
+                                            .bucket(bucketName)
+                                            .object(from)
+                                            .build())
+                            .build());
+        } catch (ErrorResponseException | InvalidResponseException e) {
+            throw new StorageErrorResponseException(e.getMessage());
+        } catch (InsufficientDataException | InternalException | IOException | NoSuchAlgorithmException |
+                 ServerException | XmlParserException e) {
+            throw new StorageException(e.getMessage());
+        } catch (InvalidKeyException e) {
+            throw new StorageAccessException(e.getMessage());
         }
     }
 

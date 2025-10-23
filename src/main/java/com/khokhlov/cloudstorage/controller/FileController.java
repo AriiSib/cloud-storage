@@ -31,6 +31,12 @@ public class FileController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+    @GetMapping(value = "/resource/move")
+    public ResponseEntity<?> renameOrMove(@Valid @ModelAttribute RenameOrMoveRequest request) {
+        ResourceResponse response = fileService.renameOrMove(request.from(), request.to());
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
     @PostMapping(value = "/resource", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> upload(@Valid @ModelAttribute UploadRequest request,
                                     @RequestPart(name = "file") List<MultipartFile> file) {
