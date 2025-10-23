@@ -1,4 +1,4 @@
-package com.khokhlov.cloudstorage.model.dto;
+package com.khokhlov.cloudstorage.model.dto.response;
 
 import org.springframework.http.ContentDisposition;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;

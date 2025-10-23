@@ -1,7 +1,7 @@
 package com.khokhlov.cloudstorage.mapper;
 
-import com.khokhlov.cloudstorage.model.dto.AuthRequest;
-import com.khokhlov.cloudstorage.model.dto.AuthResponse;
+import com.khokhlov.cloudstorage.model.dto.request.AuthRequest;
+import com.khokhlov.cloudstorage.model.dto.response.AuthResponse;
 import com.khokhlov.cloudstorage.model.entity.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

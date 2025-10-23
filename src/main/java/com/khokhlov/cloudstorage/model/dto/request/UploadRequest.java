@@ -1,4 +1,4 @@
-package com.khokhlov.cloudstorage.model.dto;
+package com.khokhlov.cloudstorage.model.dto.request;
 
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;

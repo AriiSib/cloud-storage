@@ -1,7 +1,7 @@
 package com.khokhlov.cloudstorage.controller.auth;
 
-import com.khokhlov.cloudstorage.model.dto.AuthRequest;
-import com.khokhlov.cloudstorage.model.dto.AuthResponse;
+import com.khokhlov.cloudstorage.model.dto.request.AuthRequest;
+import com.khokhlov.cloudstorage.model.dto.response.AuthResponse;
 import com.khokhlov.cloudstorage.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

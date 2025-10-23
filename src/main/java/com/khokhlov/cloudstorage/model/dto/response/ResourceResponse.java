@@ -1,4 +1,4 @@
-package com.khokhlov.cloudstorage.model.dto;
+package com.khokhlov.cloudstorage.model.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.khokhlov.cloudstorage.model.entity.FileType;

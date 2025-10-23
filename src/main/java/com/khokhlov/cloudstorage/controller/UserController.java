@@ -1,6 +1,6 @@
 package com.khokhlov.cloudstorage.controller;
 
-import com.khokhlov.cloudstorage.model.dto.UserDto;
+import com.khokhlov.cloudstorage.model.dto.response.UserResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
     @GetMapping("/me")
-    public ResponseEntity<UserDto> me(@AuthenticationPrincipal UserDetails userDetails) {
-        return ResponseEntity.ok(new UserDto(userDetails.getUsername()));
+    public ResponseEntity<UserResponse> me(@AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok(new UserResponse(userDetails.getUsername()));
     }
 
 }

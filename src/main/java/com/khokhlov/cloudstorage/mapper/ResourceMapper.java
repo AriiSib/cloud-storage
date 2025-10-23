@@ -1,6 +1,6 @@
 package com.khokhlov.cloudstorage.mapper;
 
-import com.khokhlov.cloudstorage.model.dto.ResourceResponse;
+import com.khokhlov.cloudstorage.model.dto.response.ResourceResponse;
 import org.springframework.stereotype.Component;
 
 import static com.khokhlov.cloudstorage.model.entity.FileType.*;
