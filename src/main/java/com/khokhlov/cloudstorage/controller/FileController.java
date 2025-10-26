@@ -1,9 +1,6 @@
 package com.khokhlov.cloudstorage.controller;
 
-import com.khokhlov.cloudstorage.model.dto.request.DirectoryRequest;
-import com.khokhlov.cloudstorage.model.dto.request.RenameOrMoveRequest;
-import com.khokhlov.cloudstorage.model.dto.request.ResourceRequest;
-import com.khokhlov.cloudstorage.model.dto.request.UploadRequest;
+import com.khokhlov.cloudstorage.model.dto.request.*;
 import com.khokhlov.cloudstorage.model.dto.response.DownloadResponse;
 import com.khokhlov.cloudstorage.model.dto.response.ResourceResponse;
 import com.khokhlov.cloudstorage.service.FileService;
@@ -31,13 +28,13 @@ public class FileController {
     }
 
     @GetMapping(value = "/directory")
-    public ResponseEntity<?> checkDirectory(@Valid @ModelAttribute DirectoryRequest request) {
+    public ResponseEntity<?> checkDirectory(@Valid @ModelAttribute RootOrResourceRequest request) {
         List<ResourceResponse> response = fileService.checkDirectory(request.path());
         return ResponseEntity.ok().body(response);
     }
 
     @PostMapping(value = "/directory")
-    public ResponseEntity<?> createDirectory(@Valid @ModelAttribute DirectoryRequest request) {
+    public ResponseEntity<?> createDirectory(@Valid @ModelAttribute RootOrResourceRequest request) {
         ResourceResponse response = fileService.createDirectory(request.path());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -55,13 +52,13 @@ public class FileController {
     }
 
     @PostMapping(value = "/resource", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> upload(@Valid @ModelAttribute UploadRequest request,
-                                    @RequestPart(name = "file") List<MultipartFile> file) {
-        for (MultipartFile fileItem : file) {
+    public ResponseEntity<?> upload(@Valid @ModelAttribute RootOrResourceRequest request,
+                                    @RequestPart() List<MultipartFile> object) {
+        for (MultipartFile fileItem : object) {
             if (fileItem.getOriginalFilename() == null || fileItem.getOriginalFilename().isEmpty())
                 throw new MultipartException("The file was not transferred to the server");
         }
-        List<ResourceResponse> response = fileService.upload(request.path(), file);
+        List<ResourceResponse> response = fileService.upload(request.path(), object);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
