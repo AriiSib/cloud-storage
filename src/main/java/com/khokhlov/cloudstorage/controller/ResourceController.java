@@ -3,7 +3,9 @@ package com.khokhlov.cloudstorage.controller;
 import com.khokhlov.cloudstorage.model.dto.request.*;
 import com.khokhlov.cloudstorage.model.dto.response.DownloadResponse;
 import com.khokhlov.cloudstorage.model.dto.response.ResourceResponse;
-import com.khokhlov.cloudstorage.service.FileService;
+import com.khokhlov.cloudstorage.service.resource.ResourceCommandService;
+import com.khokhlov.cloudstorage.service.resource.ResourceDownloadService;
+import com.khokhlov.cloudstorage.service.resource.ResourceQueryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
@@ -17,64 +19,65 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")
-public class FileController {
-
-    private final FileService fileService;
+public class ResourceController {
+    private final ResourceQueryService queryService;
+    private final ResourceCommandService commandService;
+    private final ResourceDownloadService downloadService;
 
     @GetMapping(value = "/resource")
     public ResponseEntity<?> checkResource(@Valid @ModelAttribute ResourceRequest request) {
-        ResourceResponse response = fileService.checkResource(request.path());
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        ResourceResponse response = queryService.checkResource(request.path());
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping(value = "/directory")
     public ResponseEntity<?> checkDirectory(@Valid @ModelAttribute RootOrResourceRequest request) {
-        List<ResourceResponse> response = fileService.checkDirectory(request.path());
+        List<ResourceResponse> response = queryService.checkDirectory(request.path());
         return ResponseEntity.ok().body(response);
     }
 
     @PostMapping(value = "/directory")
     public ResponseEntity<?> createDirectory(@Valid @ModelAttribute RootOrResourceRequest request) {
-        ResourceResponse response = fileService.createDirectory(request.path());
+        ResourceResponse response = commandService.createDirectory(request.path());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping(value = "/resource/search")
     public ResponseEntity<?> search(@Valid @ModelAttribute(name = "query") ResourceRequest query) {
-        List<ResourceResponse> response = fileService.searchResource(query.path());
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        List<ResourceResponse> response = queryService.searchResource(query.path());
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping(value = "/resource/move")
     public ResponseEntity<?> renameOrMove(@Valid @ModelAttribute RenameOrMoveRequest request) {
-        ResourceResponse response = fileService.renameOrMove(request.from(), request.to());
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        ResourceResponse response = commandService.renameOrMove(request.from(), request.to());
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping(value = "/resource", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> upload(@Valid @ModelAttribute RootOrResourceRequest request,
-                                    @RequestPart() List<MultipartFile> object) {
-        for (MultipartFile fileItem : object) {
-            if (fileItem.getOriginalFilename() == null || fileItem.getOriginalFilename().isEmpty())
-                throw new MultipartException("The file was not transferred to the server");
-        }
-        List<ResourceResponse> response = fileService.upload(request.path(), object);
+                                    @RequestParam() List<MultipartFile> files) {
+        if (files == null || files.isEmpty() || files.stream().anyMatch(
+                file -> file.isEmpty() || file.getOriginalFilename() == null || file.getOriginalFilename().isBlank()))
+            throw new MultipartException("The file was not transferred to the server");
+
+        List<ResourceResponse> response = commandService.upload(request.path(), files);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping(value = "/resource/download")
     public ResponseEntity<StreamingResponseBody> download(@Valid @ModelAttribute ResourceRequest request) {
-        DownloadResponse response = fileService.download(request.path());
+        DownloadResponse response = downloadService.download(request.path());
 
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, response.contentDisposition().toString())
+                .header(HttpHeaders.CONTENT_DISPOSITION, response.contentDisposition())
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(response.body());
     }
 
     @DeleteMapping(value = "/resource")
     public ResponseEntity<?> delete(@Valid @ModelAttribute ResourceRequest request) {
-        fileService.delete(request.path());
+        commandService.delete(request.path());
         return ResponseEntity.noContent().build();
     }
 }
