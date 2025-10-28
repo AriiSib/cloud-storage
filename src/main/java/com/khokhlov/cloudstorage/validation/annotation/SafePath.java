@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = PathSafeValidator.class)
 public @interface SafePath {
-    String message() default "Invalid path";
+    String message() default "Value is longer than 255 characters or contains invalid characters";
 
     Class<?>[] groups() default {};
 
