@@ -20,7 +20,6 @@ import org.springframework.web.multipart.support.MissingServletRequestPartExcept
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class RestControllerExceptionHandler {
@@ -54,17 +53,30 @@ public class RestControllerExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    Map<String, Object> onInvalidRequest(MethodArgumentNotValidException exception) {
+    Map<String, String> onInvalidRequestValidation(MethodArgumentNotValidException exception) {
         var fieldErrors = exception.getBindingResult()
                 .getFieldErrors()
                 .stream()
-                .collect(Collectors.toMap(
-                        FieldError::getField,
-                        FieldError::getDefaultMessage,
-                        (first, second) -> first
-                ));
+                .findFirst()
+                .map(FieldError::getDefaultMessage)
+                .orElse("Invalid request");
         return Map.of("message", fieldErrors);
     }
+
+    // Current frontend does not support errors list
+//    @ExceptionHandler(MethodArgumentNotValidException.class)
+//    @ResponseStatus(HttpStatus.BAD_REQUEST)
+//    Map<String, Object> onInvalidRequestValidation(MethodArgumentNotValidException exception) {
+//        var fieldErrors = exception.getBindingResult()
+//                .getFieldErrors()
+//                .stream()
+//                .collect(Collectors.toMap(
+//                        FieldError::getField,
+//                        FieldError::getDefaultMessage,
+//                        (first, second) -> first
+//                ));
+//        return Map.of("message", fieldErrors);
+//    }
 
     @ExceptionHandler(StorageNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
@@ -89,7 +101,8 @@ public class RestControllerExceptionHandler {
             MultipartException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     Map<String, String> onMultipart(Exception exception) {
-        return Map.of("message", exception.getMessage());
+        return Map.of("message", exception.getMessage() + ". Maximum file size = 10GB. " +
+                "Maximum number of uploaded files = 100");
     }
 
 }
