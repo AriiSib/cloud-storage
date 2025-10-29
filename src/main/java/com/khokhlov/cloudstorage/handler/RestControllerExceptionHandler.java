@@ -101,8 +101,8 @@ public class RestControllerExceptionHandler {
             MultipartException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     Map<String, String> onMultipart(Exception exception) {
-        return Map.of("message", exception.getMessage() + ". Maximum file size = 10GB. " +
-                "Maximum number of uploaded files = 100");
+        return Map.of("message", exception.getMessage() + ". Maximum file size: 10GB. " +
+                "Maximum number of uploaded files: 100");
     }
 
 }

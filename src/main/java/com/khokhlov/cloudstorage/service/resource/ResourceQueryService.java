@@ -6,12 +6,13 @@ import com.khokhlov.cloudstorage.facade.CurrentUser;
 import com.khokhlov.cloudstorage.mapper.ResourceMapper;
 import com.khokhlov.cloudstorage.model.dto.response.MinioResponse;
 import com.khokhlov.cloudstorage.model.dto.response.ResourceResponse;
-import com.khokhlov.cloudstorage.util.PathUtil;
 import com.khokhlov.cloudstorage.util.StorageObjectBuilder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+
+import static com.khokhlov.cloudstorage.util.PathUtil.*;
 
 @Service
 @RequiredArgsConstructor
@@ -24,7 +25,7 @@ public class ResourceQueryService {
     public ResourceResponse checkResource(String relPath) {
         Long userId = currentUser.getCurrentUserId();
         String objectName = StorageObjectBuilder.normalizePath(userId, relPath);
-        boolean isDir = objectName.endsWith("/");
+        boolean isDir = isDirectory(objectName);
 
         if (isDir) {
             if (!storage.isResourceExists(objectName))
@@ -48,7 +49,7 @@ public class ResourceQueryService {
         List<String> objects = storage.listObjects(objectName, false);
         for (String object : objects) {
             if (object.equals(objectName)) continue;
-            responses.add(checkResource(PathUtil.stripUserRoot(object)));
+            responses.add(checkResource(stripUserRoot(object)));
         }
 
         return responses;
@@ -68,7 +69,7 @@ public class ResourceQueryService {
         for (String objectName : objects) {
             String relPath = objectName.substring(userRoot.length());
 
-            String fileName = PathUtil.getFileName(relPath);
+            String fileName = getFileName(relPath);
             if (fileName.toLowerCase(Locale.ROOT).contains(query)) {
                 responses.add(checkResource(relPath));
             }

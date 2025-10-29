@@ -17,7 +17,7 @@ public class PathUtil {
     }
 
     public static String stripTrailingSlash(String string) {
-        return string.endsWith("/") ? string.substring(0, string.length() - 1) : string;
+        return isDirectory(string) ? string.substring(0, string.length() - 1) : string;
     }
 
     public static boolean isDirectory(String path) {
@@ -26,7 +26,7 @@ public class PathUtil {
 
     public static String getParentOfDir(String path) {
         String withoutSlash = stripTrailingSlash(path);
-        if (!withoutSlash.contains("/")) return "/";
+        if (!withoutSlash.contains("/")) return "";
         int index = withoutSlash.lastIndexOf('/');
         return (index < 0) ? "" : withoutSlash.substring(0, index + 1);
     }
@@ -37,15 +37,20 @@ public class PathUtil {
         return (index < 0) ? path : path.substring(0, index + 1);
     }
 
-    public static String getDirName(String path) {
-        String withoutSlash = stripTrailingSlash(path);
-        int index = withoutSlash.lastIndexOf('/');
-        return (index < 0) ? withoutSlash : withoutSlash.substring(index + 1);
+    public static String getFileName(String path) {
+        int parent = path.lastIndexOf("/");
+        return (parent < 0) ? path : path.substring(parent + 1);
     }
 
-    public static String getFileName(String path) {
-        int index = path.lastIndexOf("/");
-        return (index < 0) ? path : path.substring(index + 1);
+    public static String getDirName(String path) {
+        path = stripUserRoot(path);
+        String dirName = stripTrailingSlash(path);
+        int parent = dirName.lastIndexOf('/');
+        return (parent < 0) ? dirName : dirName.substring(parent + 1);
+    }
+
+    public static String getDirectory(String path) {
+        return getDirName(path) + "/";
     }
 
 }

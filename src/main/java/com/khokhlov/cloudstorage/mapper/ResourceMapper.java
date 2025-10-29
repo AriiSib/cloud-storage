@@ -11,10 +11,12 @@ public class ResourceMapper {
 
     public ResourceResponse toResponse(String objectName, Long size) {
         String relPath = stripUserRoot(objectName);
+        String name = isDirectory(relPath) ? getDirectory(relPath) : getFileName(relPath);
+        String path = relPath.replace(name, "");
         if (isDirectory(relPath)) {
-            return new ResourceResponse(getParentOfDir(relPath), getDirName(relPath), size, DIRECTORY);
+            return new ResourceResponse(path, name, size, DIRECTORY);
         } else {
-            return new ResourceResponse(getParentOfFile(relPath), getFileName(relPath), size, FILE);
+            return new ResourceResponse(path, name, size, FILE);
         }
     }
 

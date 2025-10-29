@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static com.khokhlov.cloudstorage.util.PathUtil.*;
+
 @Component
 @RequiredArgsConstructor
 public class MinioStorageAdapter implements StoragePort {
@@ -84,7 +86,7 @@ public class MinioStorageAdapter implements StoragePort {
     @Override
     public void renameOrMove(String objectNameFrom, String objectNameTo) {
         List<String> objects;
-        if (objectNameFrom.endsWith("/")) {
+        if (isDirectory(objectNameFrom)) {
             objects = listObjects(objectNameFrom, true);
             for (String from : objects) {
                 String to = from.replace(objectNameFrom, objectNameTo);

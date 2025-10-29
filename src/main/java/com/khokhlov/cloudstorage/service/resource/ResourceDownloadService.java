@@ -5,7 +5,6 @@ import com.khokhlov.cloudstorage.exception.minio.StorageNotFoundException;
 import com.khokhlov.cloudstorage.facade.CurrentUser;
 import com.khokhlov.cloudstorage.model.dto.response.DownloadResponse;
 import com.khokhlov.cloudstorage.model.dto.response.MinioResponse;
-import com.khokhlov.cloudstorage.util.PathUtil;
 import com.khokhlov.cloudstorage.util.StorageObjectBuilder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,6 +17,8 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import static com.khokhlov.cloudstorage.util.PathUtil.*;
+
 @Service
 @RequiredArgsConstructor
 public class ResourceDownloadService {
@@ -28,13 +29,13 @@ public class ResourceDownloadService {
         Long userId = currentUser.getCurrentUserId();
         String userRoot = StorageObjectBuilder.getUserRoot(userId);
         String objectName = userRoot + path;
-        boolean isDir = path.endsWith("/");
+        boolean isDir = isDirectory(path);
         if (isDir) {
             if (!storage.isResourceExists(objectName))
                 throw new StorageNotFoundException("Resource not found");
             else {
                 List<String> objects = storage.listObjects(objectName, true);
-                String zipName = PathUtil.getDirName(path) + ".zip";
+                String zipName = getDirName(path) + ".zip";
 
                 StreamingResponseBody body = out -> {
                     try (ZipOutputStream zip = new ZipOutputStream(out)) {
@@ -64,7 +65,7 @@ public class ResourceDownloadService {
                 }
             };
 
-            return new DownloadResponse(body, buildContentDisposition(PathUtil.getFileName(path)));
+            return new DownloadResponse(body, buildContentDisposition(getFileName(path)));
         }
     }
 

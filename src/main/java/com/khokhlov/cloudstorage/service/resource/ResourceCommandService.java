@@ -8,7 +8,6 @@ import com.khokhlov.cloudstorage.facade.CurrentUser;
 import com.khokhlov.cloudstorage.mapper.ResourceMapper;
 import com.khokhlov.cloudstorage.model.dto.response.MinioResponse;
 import com.khokhlov.cloudstorage.model.dto.response.ResourceResponse;
-import com.khokhlov.cloudstorage.util.PathUtil;
 import com.khokhlov.cloudstorage.util.StorageObjectBuilder;
 import com.khokhlov.cloudstorage.validation.PathValidationUtils;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static com.khokhlov.cloudstorage.util.PathUtil.*;
+
 @Service
 @RequiredArgsConstructor
 public class ResourceCommandService {
@@ -31,15 +32,14 @@ public class ResourceCommandService {
     public ResourceResponse createDirectory(String relPath) {
         Long userId = currentUser.getCurrentUserId();
         String objectName = StorageObjectBuilder.normalizePath(userId, relPath);
-        String parent = objectName.replace(PathUtil.getDirectory(relPath), "");
+        String parent = objectName.replace(getDirectory(relPath), "");
         if (!storage.isResourceExists(parent) && !parent.equals(StorageObjectBuilder.getUserRoot(userId)))
             throw new StorageNotFoundException("Parent directory not exist");
         if (storage.isResourceExists(objectName))
-            throw new StorageAlreadyExistsException(PathUtil.getDirectory(relPath));
+            throw new StorageAlreadyExistsException(getDirectory(relPath));
         storage.createDirectory(objectName);
         return resourceMapper.toResponse(objectName, null);
     }
-
 
     public List<ResourceResponse> upload(String relPath, List<MultipartFile> files) {
         Long userId = currentUser.getCurrentUserId();
@@ -74,52 +74,10 @@ public class ResourceCommandService {
         return responses;
     }
 
-    //todo: separate rename and move
-    public ResourceResponse renameOrMove(String pathFrom, String pathTo) {
-        Long userId = currentUser.getCurrentUserId();
-        if (pathFrom.equals(pathTo)) throw new StorageAlreadyExistsException("");
-
-        String objectNameFrom = StorageObjectBuilder.normalizePath(userId, pathFrom);
-        String objectNameTo = StorageObjectBuilder.normalizePath(userId, pathTo);
-
-        if (!storage.isResourceExists(objectNameFrom)) throw new StorageNotFoundException("Resource not found");
-        boolean isDirFrom = objectNameFrom.endsWith("/");
-        boolean isDirTo = objectNameTo.endsWith("/");
-
-        if (isDirFrom || isDirTo) {
-            if (!isDirFrom || !isDirTo) throw new StorageException("Passed paths to different resources");
-            return renameOrMoveDir(objectNameFrom, objectNameTo);
-        } else {
-            return renameOrMoveFile(objectNameFrom, objectNameTo);
-        }
-    }
-
-    private ResourceResponse renameOrMoveFile(String objectNameFrom, String objectNameTo) {
-        if (storage.isResourceExists(objectNameTo))
-            throw new StorageAlreadyExistsException(PathUtil.getFileName(objectNameTo));
-        MinioResponse meta = storage.checkObject(objectNameFrom);
-        if (meta == null) throw new StorageNotFoundException("Resource not found");
-        storage.renameOrMove(objectNameFrom, objectNameTo);
-        return resourceMapper.toResponse(objectNameTo, meta.size());
-    }
-
-    private ResourceResponse renameOrMoveDir(String objectNameFrom, String objectNameTo) {
-        String dirNameFrom = PathUtil.getDirectory(objectNameFrom);
-        String dirNameTo = PathUtil.getDirectory(objectNameTo);
-
-        if (!PathUtil.getParentOfDir(objectNameFrom).equals(PathUtil.getParentOfDir(objectNameTo)) && !dirNameFrom.equals(dirNameTo))
-            throw new StorageException("Names of the moved directories do not match");
-        if (storage.isResourceExists(objectNameTo))
-            throw new StorageAlreadyExistsException(dirNameTo);
-
-        storage.renameOrMove(objectNameFrom, objectNameTo);
-        return resourceMapper.toResponse(objectNameTo, null);
-    }
-
     public void delete(String relPath) {
         Long userId = currentUser.getCurrentUserId();
         String objectName = StorageObjectBuilder.normalizePath(userId, relPath);
-        boolean isDir = relPath.endsWith("/");
+        boolean isDir = isDirectory(objectName);
         if (isDir) {
             if (!storage.isResourceExists(objectName)) {
                 throw new StorageNotFoundException("Resource not found");
@@ -133,6 +91,47 @@ public class ResourceCommandService {
         }
 
         storage.delete(List.of(objectName));
+    }
+
+    public ResourceResponse renameOrMove(String pathFrom, String pathTo) {
+        Long userId = currentUser.getCurrentUserId();
+        if (pathFrom.equals(pathTo)) throw new StorageAlreadyExistsException("");
+
+        String objectNameFrom = StorageObjectBuilder.normalizePath(userId, pathFrom);
+        String objectNameTo = StorageObjectBuilder.normalizePath(userId, pathTo);
+
+        if (!storage.isResourceExists(objectNameFrom)) throw new StorageNotFoundException("Resource not found");
+        boolean isDirFrom = isDirectory(objectNameFrom);
+        boolean isDirTo = isDirectory(objectNameTo);
+
+        if (isDirFrom || isDirTo) {
+            if (!isDirFrom || !isDirTo) throw new StorageException("Passed paths to different resources");
+            return renameOrMoveDir(objectNameFrom, objectNameTo);
+        } else {
+            return renameOrMoveFile(objectNameFrom, objectNameTo);
+        }
+    }
+
+    private ResourceResponse renameOrMoveFile(String objectNameFrom, String objectNameTo) {
+        if (storage.isResourceExists(objectNameTo))
+            throw new StorageAlreadyExistsException(getFileName(objectNameTo));
+        MinioResponse meta = storage.checkObject(objectNameFrom);
+        if (meta == null) throw new StorageNotFoundException("Resource not found");
+        storage.renameOrMove(objectNameFrom, objectNameTo);
+        return resourceMapper.toResponse(objectNameTo, meta.size());
+    }
+
+    private ResourceResponse renameOrMoveDir(String objectNameFrom, String objectNameTo) {
+        String dirNameFrom = getDirectory(objectNameFrom);
+        String dirNameTo = getDirectory(objectNameTo);
+
+        if (!getParentOfDir(objectNameFrom).equals(getParentOfDir(objectNameTo)) && !dirNameFrom.equals(dirNameTo))
+            throw new StorageException("Names of the moved directories do not match");
+        if (storage.isResourceExists(objectNameTo))
+            throw new StorageAlreadyExistsException(dirNameTo);
+
+        storage.renameOrMove(objectNameFrom, objectNameTo);
+        return resourceMapper.toResponse(objectNameTo, null);
     }
 
 }

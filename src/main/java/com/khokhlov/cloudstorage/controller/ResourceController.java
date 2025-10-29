@@ -24,37 +24,41 @@ public class ResourceController {
     private final ResourceCommandService commandService;
     private final ResourceDownloadService downloadService;
 
-    @GetMapping(value = "/resource")
-    public ResponseEntity<?> checkResource(@Valid @ModelAttribute ResourceRequest request) {
+    @GetMapping(value = "/resource", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ResourceResponse> checkResource(@Valid @ModelAttribute ResourceRequest request) {
         ResourceResponse response = queryService.checkResource(request.path());
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping(value = "/directory")
-    public ResponseEntity<?> checkDirectory(@Valid @ModelAttribute RootOrResourceRequest request) {
+    @GetMapping(value = "/directory", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<ResourceResponse>> checkDirectory(@Valid @ModelAttribute RootOrResourceRequest request) {
         List<ResourceResponse> response = queryService.checkDirectory(request.path());
         return ResponseEntity.ok().body(response);
     }
 
-    @PostMapping(value = "/directory")
-    public ResponseEntity<?> createDirectory(@Valid @ModelAttribute RootOrResourceRequest request) {
+    @PostMapping(value = "/directory", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ResourceResponse> createDirectory(@Valid @ModelAttribute RootOrResourceRequest request) {
         ResourceResponse response = commandService.createDirectory(request.path());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @GetMapping(value = "/resource/search")
-    public ResponseEntity<?> search(@Valid @ModelAttribute(name = "query") ResourceRequest query) {
+    @GetMapping(value = "/resource/search", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<ResourceResponse>> search(@Valid @ModelAttribute(name = "query") ResourceRequest query) {
         List<ResourceResponse> response = queryService.searchResource(query.path());
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping(value = "/resource/move")
-    public ResponseEntity<?> renameOrMove(@Valid @ModelAttribute RenameOrMoveRequest request) {
+    @GetMapping(value = "/resource/move", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ResourceResponse> renameOrMove(@Valid @ModelAttribute RenameOrMoveRequest request) {
         ResourceResponse response = commandService.renameOrMove(request.from(), request.to());
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping(value = "/resource", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(
+            value = "/resource",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     public ResponseEntity<?> upload(@Valid @ModelAttribute RootOrResourceRequest request,
                                     @RequestParam() List<MultipartFile> files) {
         if (files == null || files.isEmpty() || files.stream().anyMatch(
@@ -65,7 +69,7 @@ public class ResourceController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @GetMapping(value = "/resource/download")
+    @GetMapping(value = "/resource/download", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<StreamingResponseBody> download(@Valid @ModelAttribute ResourceRequest request) {
         DownloadResponse response = downloadService.download(request.path());
 
@@ -76,7 +80,7 @@ public class ResourceController {
     }
 
     @DeleteMapping(value = "/resource")
-    public ResponseEntity<?> delete(@Valid @ModelAttribute ResourceRequest request) {
+    public ResponseEntity<Void> delete(@Valid @ModelAttribute ResourceRequest request) {
         commandService.delete(request.path());
         return ResponseEntity.noContent().build();
     }
