@@ -28,15 +28,15 @@ window.APP_CONFIG = {
 
     //корректное имя пользователя
     validUsername: {
-        minLength: 5,
+        minLength: 4,
         maxLength: 20,
         pattern: "^[a-zA-Z0-9]+[a-zA-Z_0-9]*[a-zA-Z0-9]+$",
     },
 
     //корректный пароль
     validPassword: {
-        minLength: 5,
-        maxLength: 20,
+        minLength: 6,
+        maxLength: 32,
         pattern: "^[a-zA-Z0-9!@#$%^&*(),.?\":{}|<>[\\]/`~+=-_';]*$",
     },
 
