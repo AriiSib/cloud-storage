@@ -1,5 +1,6 @@
 package com.khokhlov.cloudstorage.config;
 
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -36,6 +37,8 @@ public class SecurityConfig {
                 )
 //                .anonymous(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/").permitAll()
+                        .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/sign-up", "/api/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/sign-out").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/user/me").authenticated()
