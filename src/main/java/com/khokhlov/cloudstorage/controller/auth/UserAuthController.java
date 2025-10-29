@@ -36,7 +36,7 @@ public class UserAuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PostMapping("/login")
+    @PostMapping("/sign-in")
     public ResponseEntity<AuthResponse> login(
             @Valid @RequestBody AuthRequest request,
             HttpServletRequest req,
