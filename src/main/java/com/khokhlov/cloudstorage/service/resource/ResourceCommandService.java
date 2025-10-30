@@ -4,7 +4,6 @@ import com.khokhlov.cloudstorage.adapter.StoragePort;
 import com.khokhlov.cloudstorage.exception.minio.StorageAlreadyExistsException;
 import com.khokhlov.cloudstorage.exception.minio.StorageException;
 import com.khokhlov.cloudstorage.exception.minio.StorageNotFoundException;
-import com.khokhlov.cloudstorage.facade.CurrentUser;
 import com.khokhlov.cloudstorage.mapper.ResourceMapper;
 import com.khokhlov.cloudstorage.model.dto.response.MinioResponse;
 import com.khokhlov.cloudstorage.model.dto.response.ResourceResponse;
@@ -25,12 +24,10 @@ import static com.khokhlov.cloudstorage.util.PathUtil.*;
 @Service
 @RequiredArgsConstructor
 public class ResourceCommandService {
-    private final CurrentUser currentUser;
     private final StoragePort storage;
     private final ResourceMapper resourceMapper;
 
-    public ResourceResponse createDirectory(String relPath) {
-        Long userId = currentUser.getCurrentUserId();
+    public ResourceResponse createDirectory(long userId, String relPath) {
         String objectName = StorageObjectBuilder.normalizePath(userId, relPath);
         String parent = objectName.replace(getDirectory(relPath), "");
         if (!storage.isResourceExists(parent) && !parent.equals(StorageObjectBuilder.getUserRoot(userId)))
@@ -41,8 +38,7 @@ public class ResourceCommandService {
         return resourceMapper.toResponse(objectName, null);
     }
 
-    public List<ResourceResponse> upload(String relPath, List<MultipartFile> files) {
-        Long userId = currentUser.getCurrentUserId();
+    public List<ResourceResponse> upload(long userId, String relPath, List<MultipartFile> files) {
         for (MultipartFile file : files)
             if (!PathValidationUtils.isValidPath(file.getOriginalFilename(), true))
                 throw new StorageException("Value is longer than 255 characters or contains invalid characters");
@@ -74,8 +70,7 @@ public class ResourceCommandService {
         return responses;
     }
 
-    public void delete(String relPath) {
-        Long userId = currentUser.getCurrentUserId();
+    public void delete(long userId, String relPath) {
         String objectName = StorageObjectBuilder.normalizePath(userId, relPath);
         boolean isDir = isDirectory(objectName);
         if (isDir) {
@@ -93,8 +88,7 @@ public class ResourceCommandService {
         storage.delete(List.of(objectName));
     }
 
-    public ResourceResponse renameOrMove(String pathFrom, String pathTo) {
-        Long userId = currentUser.getCurrentUserId();
+    public ResourceResponse renameOrMove(long userId, String pathFrom, String pathTo) {
         if (pathFrom.equals(pathTo)) throw new StorageAlreadyExistsException("");
 
         String objectNameFrom = StorageObjectBuilder.normalizePath(userId, pathFrom);

@@ -2,7 +2,6 @@ package com.khokhlov.cloudstorage.service.resource;
 
 import com.khokhlov.cloudstorage.adapter.StoragePort;
 import com.khokhlov.cloudstorage.exception.minio.StorageNotFoundException;
-import com.khokhlov.cloudstorage.facade.CurrentUser;
 import com.khokhlov.cloudstorage.mapper.ResourceMapper;
 import com.khokhlov.cloudstorage.model.dto.response.MinioResponse;
 import com.khokhlov.cloudstorage.model.dto.response.ResourceResponse;
@@ -17,13 +16,11 @@ import static com.khokhlov.cloudstorage.util.PathUtil.*;
 @Service
 @RequiredArgsConstructor
 public class ResourceQueryService {
-    private final CurrentUser currentUser;
     private final StoragePort storage;
     private final ResourceMapper resourceMapper;
 
 
-    public ResourceResponse checkResource(String relPath) {
-        Long userId = currentUser.getCurrentUserId();
+    public ResourceResponse checkResource(long userId, String relPath) {
         String objectName = StorageObjectBuilder.normalizePath(userId, relPath);
         boolean isDir = isDirectory(objectName);
 
@@ -40,8 +37,7 @@ public class ResourceQueryService {
     }
 
 
-    public List<ResourceResponse> checkDirectory(String relPath) {
-        Long userId = currentUser.getCurrentUserId();
+    public List<ResourceResponse> checkDirectory(long userId, String relPath) {
         String objectName = StorageObjectBuilder.normalizePath(userId, relPath);
         if (!storage.isResourceExists(objectName) && !objectName.equals(StorageObjectBuilder.getUserRoot(userId)))
             throw new StorageNotFoundException("Resource not found");
@@ -49,14 +45,13 @@ public class ResourceQueryService {
         List<String> objects = storage.listObjects(objectName, false);
         for (String object : objects) {
             if (object.equals(objectName)) continue;
-            responses.add(checkResource(stripUserRoot(object)));
+            responses.add(checkResource(userId, stripUserRoot(object)));
         }
 
         return responses;
     }
 
-    public List<ResourceResponse> searchResource(String query) {
-        Long userId = currentUser.getCurrentUserId();
+    public List<ResourceResponse> searchResource(long userId, String query) {
         query = query.toLowerCase().trim();
         String userRoot = StorageObjectBuilder.getUserRoot(userId);
         List<String> objects = storage.listObjects(userRoot, true);
@@ -71,7 +66,7 @@ public class ResourceQueryService {
 
             String fileName = getFileName(relPath);
             if (fileName.toLowerCase(Locale.ROOT).contains(query)) {
-                responses.add(checkResource(relPath));
+                responses.add(checkResource(userId, relPath));
             }
 
             String[] parts = relPath.split("/");

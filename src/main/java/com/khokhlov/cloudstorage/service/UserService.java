@@ -2,17 +2,21 @@ package com.khokhlov.cloudstorage.service;
 
 import com.khokhlov.cloudstorage.exception.auth.UsernameAlreadyUsedException;
 import com.khokhlov.cloudstorage.mapper.UserMapper;
+import com.khokhlov.cloudstorage.model.dto.CustomUserDetails;
 import com.khokhlov.cloudstorage.model.dto.request.AuthRequest;
 import com.khokhlov.cloudstorage.model.dto.response.AuthResponse;
 import com.khokhlov.cloudstorage.model.entity.User;
 import com.khokhlov.cloudstorage.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 
 @Service
@@ -37,12 +41,14 @@ public class UserService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         String normalized = username.trim().toLowerCase();
-        var user = userRepository.findByUsername(normalized)
+        User user = userRepository.findByUsername(normalized)
                 .orElseThrow(() -> new UsernameNotFoundException(username));
-        return org.springframework.security.core.userdetails.User
-                .withUsername(user.getUsername())
-                .password(user.getPassword())
-                .roles("USER")
-                .build();
+
+        return new CustomUserDetails(
+                user.getId(),
+                user.getPassword(),
+                user.getUsername(),
+                List.of(new SimpleGrantedAuthority("ROLE_USER"))
+        );
     }
 }

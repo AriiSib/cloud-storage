@@ -2,7 +2,6 @@ package com.khokhlov.cloudstorage.service.resource;
 
 import com.khokhlov.cloudstorage.adapter.StoragePort;
 import com.khokhlov.cloudstorage.exception.minio.StorageNotFoundException;
-import com.khokhlov.cloudstorage.facade.CurrentUser;
 import com.khokhlov.cloudstorage.model.dto.response.DownloadResponse;
 import com.khokhlov.cloudstorage.model.dto.response.MinioResponse;
 import com.khokhlov.cloudstorage.util.StorageObjectBuilder;
@@ -22,11 +21,9 @@ import static com.khokhlov.cloudstorage.util.PathUtil.*;
 @Service
 @RequiredArgsConstructor
 public class ResourceDownloadService {
-    private final CurrentUser currentUser;
     private final StoragePort storage;
 
-    public DownloadResponse download(String path) {
-        Long userId = currentUser.getCurrentUserId();
+    public DownloadResponse download(long userId, String path) {
         String userRoot = StorageObjectBuilder.getUserRoot(userId);
         String objectName = userRoot + path;
         boolean isDir = isDirectory(path);
