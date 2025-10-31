@@ -5,6 +5,16 @@ spring:
     url: ${DB_URL}
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+  session:
+    redis:
+      namespace: cloud:sess
+      flush-mode: on_save
+      save-mode: on_set_attribute
   jpa:
     show_sql: true
     properties:
@@ -12,13 +22,21 @@ spring:
         format_sql: true
         hbm2ddl.auto: validate
     open-in-view: false
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10GB
+      max-request-size: 10GB
 logging:
   level:
     org.springframework.security: DEBUG
 server:
   port: 8080
-#  servlet:
-#    session:
+  tomcat:
+    max-part-count: 100
+  servlet:
+    session:
+      timeout: 30m
 #      cookie:
 #        name: SESSION       # Имя cookie, в которой хранится идентификатор сессии
 #        http-only: true     # Cookie нельзя читать из JS (защита от XSS)

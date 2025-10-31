@@ -30,7 +30,10 @@ public class SecurityConfig {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sm ->
-                        sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+                                sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+//                                .sessionFixation(sf -> sf.migrateSession())
+//                                .maximumSessions(1)
+                )
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint((req, res, e) ->
                                 res.setStatus(HttpStatus.UNAUTHORIZED.value()))
