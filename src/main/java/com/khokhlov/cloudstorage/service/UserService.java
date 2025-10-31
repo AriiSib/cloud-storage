@@ -5,6 +5,7 @@ import com.khokhlov.cloudstorage.mapper.UserMapper;
 import com.khokhlov.cloudstorage.model.dto.CustomUserDetails;
 import com.khokhlov.cloudstorage.model.dto.request.AuthRequest;
 import com.khokhlov.cloudstorage.model.dto.response.AuthResponse;
+import com.khokhlov.cloudstorage.model.entity.Role;
 import com.khokhlov.cloudstorage.model.entity.User;
 import com.khokhlov.cloudstorage.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -48,7 +49,7 @@ public class UserService implements UserDetailsService {
                 user.getId(),
                 user.getPassword(),
                 user.getUsername(),
-                List.of(new SimpleGrantedAuthority("ROLE_USER"))
+                List.of(new SimpleGrantedAuthority(Role.USER.asAuthority()))
         );
     }
 }
