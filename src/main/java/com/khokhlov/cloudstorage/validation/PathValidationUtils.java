@@ -4,7 +4,7 @@ import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class PathValidationUtils {
-    private static final int MAX_LENGTH = 255;
+    private static final int MAX_LENGTH = 200;
     private static final String SEGMENT_REGEX = "^[a-zA-Zа-яА-Я0-9 _().\\[\\]{}+@-]+$";
 
     public static boolean isValidPath(String value, boolean allowBlankRoot) {

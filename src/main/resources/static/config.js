@@ -37,14 +37,14 @@ window.APP_CONFIG = {
     validPassword: {
         minLength: 6,
         maxLength: 32,
-        pattern: "^[a-zA-Z0-9!@#$%^&*(),.?\":{}|<>[\\]/`~+=-_';]*$",
+        pattern: "^[^\\s]+$",
     },
 
     //корректное имя для папки
     validFolderName: {
         minLength: 1,
         maxLength: 200,
-        pattern: "^[^/\\\\:*?\"<>|]+$",
+        pattern: "^(?!\\.{1,2}$)[a-zA-Zа-яА-Я0-9 _().\\[\\]{}+@-]+$",
     },
 
 
