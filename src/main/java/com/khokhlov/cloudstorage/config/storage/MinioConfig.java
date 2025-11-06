@@ -1,4 +1,4 @@
-package com.khokhlov.cloudstorage.config;
+package com.khokhlov.cloudstorage.config.storage;
 
 import io.minio.BucketExistsArgs;
 import io.minio.MakeBucketArgs;

@@ -23,7 +23,7 @@ import static com.khokhlov.cloudstorage.util.PathUtil.*;
 public class ResourceDownloadService {
     private final StoragePort storage;
 
-    public DownloadResponse download(long userId, String path) {
+    public DownloadResponse downloadResource(long userId, String path) {
         String userRoot = StorageObjectBuilder.getUserRoot(userId);
         String objectName = userRoot + path;
         boolean isDir = isDirectory(path);

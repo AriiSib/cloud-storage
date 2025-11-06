@@ -1,6 +1,6 @@
 package com.khokhlov.cloudstorage.controller;
 
-import com.khokhlov.cloudstorage.model.dto.CustomUserDetails;
+import com.khokhlov.cloudstorage.config.security.CustomUserDetails;
 import com.khokhlov.cloudstorage.model.dto.response.UserResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

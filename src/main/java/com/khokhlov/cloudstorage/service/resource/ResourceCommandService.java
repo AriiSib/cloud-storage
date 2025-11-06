@@ -38,7 +38,7 @@ public class ResourceCommandService {
         return resourceMapper.toResponse(objectName, null);
     }
 
-    public List<ResourceResponse> upload(long userId, String relPath, List<MultipartFile> files) {
+    public List<ResourceResponse> uploadResource(long userId, String relPath, List<MultipartFile> files) {
         for (MultipartFile file : files)
             if (!PathValidationUtils.isValidPath(file.getOriginalFilename(), true))
                 throw new StorageException("Value is longer than 255 characters or contains invalid characters");
@@ -70,7 +70,7 @@ public class ResourceCommandService {
         return responses;
     }
 
-    public void delete(long userId, String relPath) {
+    public void deleteResource(long userId, String relPath) {
         String objectName = StorageObjectBuilder.normalizePath(userId, relPath);
         boolean isDir = isDirectory(objectName);
         if (isDir) {
@@ -88,7 +88,7 @@ public class ResourceCommandService {
         storage.delete(List.of(objectName));
     }
 
-    public ResourceResponse renameOrMove(long userId, String pathFrom, String pathTo) {
+    public ResourceResponse moveResource(long userId, String pathFrom, String pathTo) {
         if (pathFrom.equals(pathTo)) throw new StorageAlreadyExistsException("");
 
         String objectNameFrom = StorageObjectBuilder.normalizePath(userId, pathFrom);

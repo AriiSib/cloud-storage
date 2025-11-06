@@ -2,7 +2,7 @@ package com.khokhlov.cloudstorage.service;
 
 import com.khokhlov.cloudstorage.exception.auth.UsernameAlreadyUsedException;
 import com.khokhlov.cloudstorage.mapper.UserMapper;
-import com.khokhlov.cloudstorage.model.dto.CustomUserDetails;
+import com.khokhlov.cloudstorage.config.security.CustomUserDetails;
 import com.khokhlov.cloudstorage.model.dto.request.AuthRequest;
 import com.khokhlov.cloudstorage.model.dto.response.AuthResponse;
 import com.khokhlov.cloudstorage.model.entity.Role;

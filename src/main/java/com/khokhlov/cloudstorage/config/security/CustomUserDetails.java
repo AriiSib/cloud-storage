@@ -1,4 +1,4 @@
-package com.khokhlov.cloudstorage.model.dto;
+package com.khokhlov.cloudstorage.config.security;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

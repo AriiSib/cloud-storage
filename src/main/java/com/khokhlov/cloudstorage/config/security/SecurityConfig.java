@@ -1,11 +1,9 @@
-package com.khokhlov.cloudstorage.config;
+package com.khokhlov.cloudstorage.config.security;
 
-import com.khokhlov.cloudstorage.config.security.RestAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -29,7 +27,6 @@ import org.springframework.security.web.session.SimpleRedirectInvalidSessionStra
 public class SecurityConfig {
 
     private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
-    private final RedisConnectionFactory redisConnectionFactory;
 
     @Bean
     @Order(1)
@@ -46,13 +43,8 @@ public class SecurityConfig {
                 .anonymous(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/",
-                                "/index.html",
-                                "/config.js",
-                                "/assets/**",
-                                "/login",
-                                "/registration",
-                                "/files/**"
+                                "/", "/login", "/registration", "/files/**",
+                                "/index.html", "/config.js", "/assets/**"
                         ).permitAll()
                         .requestMatchers("/api/auth/sign-up", "/api/auth/sign-in").permitAll()
                         .anyRequest().authenticated()
@@ -78,13 +70,8 @@ public class SecurityConfig {
                 .anonymous(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/",
-                                "/index.html",
-                                "/config.js",
-                                "/assets/**",
-                                "/login",
-                                "/registration",
-                                "/files/**"
+                                "/", "/login", "/registration", "/files/**",
+                                "/index.html", "/config.js", "/assets/**"
                         ).permitAll()
                         .requestMatchers("/api/auth/sign-up", "/api/auth/sign-in").permitAll()
                         .anyRequest().authenticated()
@@ -99,49 +86,16 @@ public class SecurityConfig {
                 .build();
     }
 
-//    @Bean
-//    public RedisOperations<String, Object> sessionRedisOperations() {
-//        RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
-//        redisTemplate.setConnectionFactory(this.redisConnectionFactory);
-//        redisTemplate.setKeySerializer(new StringRedisSerializer());
-//        redisTemplate.setHashKeySerializer(new StringRedisSerializer());
-//        return redisTemplate;
-//    }
-//
-//    @Bean
-//    public FindByIndexNameSessionRepository<? extends Session> redisSessionRepository(RedisOperations<String, Object> sessionRedisOperations) {
-//        return new RedisIndexedSessionRepository(sessionRedisOperations);
-//    }
-//
-//    @Bean
-//    public SpringSessionBackedSessionRegistry<? extends Session> sessionRegistry(
-//            FindByIndexNameSessionRepository<? extends Session> sessionsRepository) {
-//        return new SpringSessionBackedSessionRegistry<>(sessionsRepository);
-//    }
-
     @Bean
     public SecurityContextRepository securityContextRepository() {
         return new HttpSessionSecurityContextRepository();
     }
 
-    // Change the ID session with the login (protection against fixing sessions) and set max sessions
+    // Change the ID session with the login (protection against fixing sessions)
     @Bean
     public SessionAuthenticationStrategy sessionAuthenticationStrategy() {
         return new ChangeSessionIdAuthenticationStrategy();
     }
-//    @Bean
-//    public SessionAuthenticationStrategy sessionAuthenticationStrategy(
-//            SpringSessionBackedSessionRegistry<?> sessionRegistry) {
-//
-//        var concurrent = new ConcurrentSessionControlAuthenticationStrategy(sessionRegistry);
-//        concurrent.setMaximumSessions(1);
-//        concurrent.setExceptionIfMaximumExceeded(true);
-//
-//        var changeId = new ChangeSessionIdAuthenticationStrategy();
-//        var register = new RegisterSessionAuthenticationStrategy(sessionRegistry);
-//
-//        return new CompositeSessionAuthenticationStrategy(List.of(concurrent, changeId, register));
-//    }
 
     @Bean
     public AuthenticationManager authenticationManager(UserDetailsService uds, PasswordEncoder pe) {

@@ -20,7 +20,7 @@ public class ResourceQueryService {
     private final ResourceMapper resourceMapper;
 
 
-    public ResourceResponse checkResource(long userId, String relPath) {
+    public ResourceResponse getResourceInfo(long userId, String relPath) {
         String objectName = StorageObjectBuilder.normalizePath(userId, relPath);
         boolean isDir = isDirectory(objectName);
 
@@ -37,7 +37,7 @@ public class ResourceQueryService {
     }
 
 
-    public List<ResourceResponse> checkDirectory(long userId, String relPath) {
+    public List<ResourceResponse> listDirectory(long userId, String relPath) {
         String objectName = StorageObjectBuilder.normalizePath(userId, relPath);
         if (!storage.isResourceExists(objectName) && !objectName.equals(StorageObjectBuilder.getUserRoot(userId)))
             throw new StorageNotFoundException("Resource not found");
@@ -45,7 +45,7 @@ public class ResourceQueryService {
         List<String> objects = storage.listObjects(objectName, false);
         for (String object : objects) {
             if (object.equals(objectName)) continue;
-            responses.add(checkResource(userId, stripUserRoot(object)));
+            responses.add(getResourceInfo(userId, stripUserRoot(object)));
         }
 
         return responses;
@@ -66,7 +66,7 @@ public class ResourceQueryService {
 
             String fileName = getFileName(relPath);
             if (fileName.toLowerCase(Locale.ROOT).contains(query)) {
-                responses.add(checkResource(userId, relPath));
+                responses.add(getResourceInfo(userId, relPath));
             }
 
             String[] parts = relPath.split("/");
