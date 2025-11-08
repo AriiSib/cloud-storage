@@ -29,7 +29,11 @@ spring:
       max-request-size: 10GB
 logging:
   level:
-    org.springframework.security: DEBUG
+    org.springframework.security: TRACE
+springdoc:
+  swagger-ui:
+    default-models-expand-depth: -1   # скрыть список моделей (Schemas)
+    default-model-expand-depth: 0      # схлопнуть пример модели у операций
 server:
   port: 8080
   tomcat:
