@@ -1,12 +1,14 @@
 package com.khokhlov.cloudstorage.controller;
 
 import com.khokhlov.cloudstorage.config.security.CustomUserDetails;
+import com.khokhlov.cloudstorage.docs.resource.GetResourceDocs;
 import com.khokhlov.cloudstorage.model.dto.request.*;
 import com.khokhlov.cloudstorage.model.dto.response.DownloadResponse;
 import com.khokhlov.cloudstorage.model.dto.response.ResourceResponse;
 import com.khokhlov.cloudstorage.service.resource.ResourceCommandService;
 import com.khokhlov.cloudstorage.service.resource.ResourceDownloadService;
 import com.khokhlov.cloudstorage.service.resource.ResourceQueryService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
@@ -18,6 +20,7 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 
 import java.util.List;
 
+@Tag(name = "Resources", description = "User files and directories")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")
@@ -26,6 +29,7 @@ public class ResourceController {
     private final ResourceCommandService commandService;
     private final ResourceDownloadService downloadService;
 
+    @GetResourceDocs
     @GetMapping(value = "/resource", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ResourceResponse> getResourceInfo(@AuthenticationPrincipal CustomUserDetails user,
                                                             @Valid @ModelAttribute ResourceRequest request) {

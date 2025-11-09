@@ -1,5 +1,6 @@
 package com.khokhlov.cloudstorage.controller.auth;
 
+import com.khokhlov.cloudstorage.docs.auth.RegisterUserDocs;
 import com.khokhlov.cloudstorage.model.dto.request.AuthRequest;
 import com.khokhlov.cloudstorage.model.dto.response.AuthResponse;
 import com.khokhlov.cloudstorage.service.UserService;
@@ -25,6 +26,7 @@ public class UserAuthController {
     private final UserService userService;
     private final AuthService authService;
 
+    @RegisterUserDocs
     @PostMapping("/sign-up")
     public ResponseEntity<AuthResponse> register(
             @Valid @RequestBody AuthRequest request,

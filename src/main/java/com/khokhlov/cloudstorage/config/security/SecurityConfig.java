@@ -40,11 +40,12 @@ public class SecurityConfig {
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(restAuthenticationEntryPoint)
                 )
-                .anonymous(AbstractHttpConfigurer::disable)
+//                .anonymous(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/", "/login", "/registration", "/files/**",
-                                "/index.html", "/config.js", "/assets/**"
+                                "/index.html", "/config.js", "/assets/**",
+                                "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**"
                         ).permitAll()
                         .requestMatchers("/api/auth/sign-up", "/api/auth/sign-in").permitAll()
                         .anyRequest().authenticated()
@@ -67,11 +68,12 @@ public class SecurityConfig {
                         .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login"))
                 )
 
-                .anonymous(AbstractHttpConfigurer::disable)
+//                .anonymous(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/", "/login", "/registration", "/files/**",
-                                "/index.html", "/config.js", "/assets/**"
+                                "/index.html", "/config.js", "/assets/**",
+                                "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**"
                         ).permitAll()
                         .requestMatchers("/api/auth/sign-up", "/api/auth/sign-in").permitAll()
                         .anyRequest().authenticated()
