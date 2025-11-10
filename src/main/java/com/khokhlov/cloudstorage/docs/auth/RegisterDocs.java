@@ -1,7 +1,7 @@
 package com.khokhlov.cloudstorage.docs.auth;
 
 import com.khokhlov.cloudstorage.model.dto.request.AuthRequest;
-import io.minio.errors.ErrorResponseException;
+import com.khokhlov.cloudstorage.model.dto.response.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -24,19 +24,32 @@ import java.lang.annotation.Target;
 @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Created",
                 content = @Content(mediaType = "application/json",
-                        schema = @Schema(implementation = AuthRequest.class))),
-
+                        schema = @Schema(implementation = AuthRequest.class), examples = @ExampleObject(
+                        value = """
+                                {
+                                  "username": "JohnDoe"
+                                }
+                                """
+                ))),
         @ApiResponse(responseCode = "400", description = "Validation error",
                 content = @Content(mediaType = "application/json",
-                        schema = @Schema(implementation = ErrorResponseException.class))),
-
+                        schema = @Schema(implementation = ErrorResponse.class), examples = @ExampleObject(
+                        value = """
+                                {
+                                  "message": "Size should be in the range from 4 to 20"
+                                }
+                                """
+                ))),
         @ApiResponse(responseCode = "409", description = "Username already in use",
                 content = @Content(mediaType = "application/json",
-                        schema = @Schema(implementation = ErrorResponseException.class))),
-
-        @ApiResponse(responseCode = "500", description = "Unexpected server error",
-                content = @Content(mediaType = "application/json",
-                        schema = @Schema(implementation = ErrorResponseException.class)))
+                        schema = @Schema(implementation = ErrorResponse.class), examples = @ExampleObject(
+                        value = """
+                                {
+                                  "message": "Username already in use: JohnDoe"
+                                }
+                                """
+                ))),
+        @ApiResponse(responseCode = "500", ref = "#/components/responses/ServerError")
 })
 @RequestBody(
         required = true,
@@ -54,5 +67,5 @@ import java.lang.annotation.Target;
                 )
         )
 )
-public @interface RegisterUserDocs {
+public @interface RegisterDocs {
 }

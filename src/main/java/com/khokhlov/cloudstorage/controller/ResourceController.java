@@ -1,13 +1,14 @@
 package com.khokhlov.cloudstorage.controller;
 
 import com.khokhlov.cloudstorage.config.security.CustomUserDetails;
-import com.khokhlov.cloudstorage.docs.resource.GetResourceDocs;
+import com.khokhlov.cloudstorage.docs.resource.*;
 import com.khokhlov.cloudstorage.model.dto.request.*;
 import com.khokhlov.cloudstorage.model.dto.response.DownloadResponse;
 import com.khokhlov.cloudstorage.model.dto.response.ResourceResponse;
 import com.khokhlov.cloudstorage.service.resource.ResourceCommandService;
 import com.khokhlov.cloudstorage.service.resource.ResourceDownloadService;
 import com.khokhlov.cloudstorage.service.resource.ResourceQueryService;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +21,7 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 
 import java.util.List;
 
-@Tag(name = "Resources", description = "User files and directories")
+@Tag(name = "3. Resources", description = "User files and directories")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")
@@ -31,48 +32,59 @@ public class ResourceController {
 
     @GetResourceDocs
     @GetMapping(value = "/resource", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ResourceResponse> getResourceInfo(@AuthenticationPrincipal CustomUserDetails user,
-                                                            @Valid @ModelAttribute ResourceRequest request) {
+    public ResponseEntity<ResourceResponse> getResourceInfo(
+            @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails user,
+            @Parameter(description = "Path to resource") @Valid @ModelAttribute ResourceRequest request) {
         ResourceResponse response = queryService.getResourceInfo(user.getId(), request.path());
         return ResponseEntity.ok(response);
     }
 
+    @GetListDirectoryDocs
     @GetMapping(value = "/directory", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<ResourceResponse>> listDirectory(@AuthenticationPrincipal CustomUserDetails user,
-                                                                @Valid @ModelAttribute RootOrResourceRequest request) {
+    public ResponseEntity<List<ResourceResponse>> listDirectory(
+            @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails user,
+            @Parameter(description = "Path to directory") @Valid @ModelAttribute RootOrResourceRequest request) {
         List<ResourceResponse> response = queryService.listDirectory(user.getId(), request.path());
         return ResponseEntity.ok().body(response);
     }
 
+    @CreateDirectoryDocs
     @PostMapping(value = "/directory", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ResourceResponse> createDirectory(@AuthenticationPrincipal CustomUserDetails user,
-                                                            @Valid @ModelAttribute RootOrResourceRequest request) {
+    public ResponseEntity<ResourceResponse> createDirectory(
+            @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails user,
+            @Parameter(description = "Path to directory") @Valid @ModelAttribute RootOrResourceRequest request) {
         ResourceResponse response = commandService.createDirectory(user.getId(), request.path());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @SearchResourceDocs
     @GetMapping(value = "/resource/search", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<ResourceResponse>> searchResource(@AuthenticationPrincipal CustomUserDetails user,
-                                                                 @Valid @ModelAttribute(name = "query") ResourceRequest query) {
+    public ResponseEntity<List<ResourceResponse>> searchResource(
+            @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails user,
+            @Parameter(description = "Name of resource") @Valid @ModelAttribute(name = "query") ResourceRequest query) {
         List<ResourceResponse> response = queryService.searchResource(user.getId(), query.path());
         return ResponseEntity.ok(response);
     }
 
+    @MoveResourceDocs
     @GetMapping(value = "/resource/move", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ResourceResponse> moveResource(@AuthenticationPrincipal CustomUserDetails user,
-                                                         @Valid @ModelAttribute RenameOrMoveRequest request) {
+    public ResponseEntity<ResourceResponse> moveResource(
+            @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails user,
+            @Parameter(description = "Path 'from' and path 'to'") @Valid @ModelAttribute RenameOrMoveRequest request) {
         ResourceResponse response = commandService.moveResource(user.getId(), request.from(), request.to());
         return ResponseEntity.ok(response);
     }
 
+    @UploadResourceDocs
     @PostMapping(
             value = "/resource",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<?> uploadResource(@AuthenticationPrincipal CustomUserDetails user,
-                                            @Valid @ModelAttribute RootOrResourceRequest request,
-                                            @RequestParam() List<MultipartFile> files) {
+    public ResponseEntity<List<ResourceResponse>> uploadResource(
+            @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails user,
+            @Parameter(description = "Path where to upload resource") @Valid @ModelAttribute RootOrResourceRequest request,
+            @Parameter(description = "Files for upload") @RequestParam() List<MultipartFile> files) {
         if (files == null || files.isEmpty() || files.stream().anyMatch(
                 file -> file.isEmpty() || file.getOriginalFilename() == null || file.getOriginalFilename().isBlank()))
             throw new MultipartException("The file was not transferred to the server");
@@ -81,9 +93,11 @@ public class ResourceController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @DownloadResourceDocs
     @GetMapping(value = "/resource/download", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public ResponseEntity<StreamingResponseBody> downloadResource(@AuthenticationPrincipal CustomUserDetails user,
-                                                                  @Valid @ModelAttribute ResourceRequest request) {
+    public ResponseEntity<StreamingResponseBody> downloadResource(
+            @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails user,
+            @Parameter(description = "Path to the downloaded resource") @Valid @ModelAttribute ResourceRequest request) {
         DownloadResponse response = downloadService.downloadResource(user.getId(), request.path());
 
         return ResponseEntity.ok()
@@ -92,9 +106,11 @@ public class ResourceController {
                 .body(response.body());
     }
 
+    @DeleteResourceDocs
     @DeleteMapping(value = "/resource")
-    public ResponseEntity<Void> deleteResource(@AuthenticationPrincipal CustomUserDetails user,
-                                               @Valid @ModelAttribute ResourceRequest request) {
+    public ResponseEntity<Void> deleteResource(
+            @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails user,
+            @Parameter(description = "Path to the resource to be deleted") @Valid @ModelAttribute ResourceRequest request) {
         commandService.deleteResource(user.getId(), request.path());
         return ResponseEntity.noContent().build();
     }

@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "Query with relative path (URL-encoded)")
 public record ResourceRequest(
-        @Schema(example = "docs/file.txt or docs/folder/")
+        @Schema(example = "docs/ or file.txt")
         @SafePath
         String path
 ) {

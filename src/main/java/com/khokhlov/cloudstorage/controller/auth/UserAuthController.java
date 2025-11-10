@@ -1,9 +1,12 @@
 package com.khokhlov.cloudstorage.controller.auth;
 
-import com.khokhlov.cloudstorage.docs.auth.RegisterUserDocs;
+import com.khokhlov.cloudstorage.docs.auth.LoginDocs;
+import com.khokhlov.cloudstorage.docs.auth.LogoutDocs;
+import com.khokhlov.cloudstorage.docs.auth.RegisterDocs;
 import com.khokhlov.cloudstorage.model.dto.request.AuthRequest;
 import com.khokhlov.cloudstorage.model.dto.response.AuthResponse;
 import com.khokhlov.cloudstorage.service.UserService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -17,7 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-
+@Tag(name = "1. Authentication", description = "User authentication")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/auth")
@@ -26,7 +29,7 @@ public class UserAuthController {
     private final UserService userService;
     private final AuthService authService;
 
-    @RegisterUserDocs
+    @RegisterDocs
     @PostMapping("/sign-up")
     public ResponseEntity<AuthResponse> register(
             @Valid @RequestBody AuthRequest request,
@@ -38,6 +41,7 @@ public class UserAuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @LoginDocs
     @PostMapping("/sign-in")
     public ResponseEntity<AuthResponse> login(
             @Valid @RequestBody AuthRequest request,
@@ -48,6 +52,7 @@ public class UserAuthController {
         return ResponseEntity.status(HttpStatus.OK).body(new AuthResponse(request.username()));
     }
 
+    @LogoutDocs
     @PostMapping("/sign-out")
     public ResponseEntity<Void> logout(HttpServletRequest req, HttpServletResponse resp) {
         var auth = SecurityContextHolder.getContext().getAuthentication();
