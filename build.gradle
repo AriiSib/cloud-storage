@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.5.1'
     id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.flywaydb.flyway' version '11.7.2'
 }
 apply from: 'version.gradle'
 
@@ -31,6 +32,8 @@ dependencies {
     implementation "org.springframework.session:spring-session-data-redis"
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation "org.flywaydb:flyway-core"
+    implementation "org.flywaydb:flyway-database-postgresql"
     implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${versions.swagger}"
     implementation "org.mapstruct:mapstruct:${versions.mapstruct}"
     implementation "io.minio:minio:${versions.minio}"
