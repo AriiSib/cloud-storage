@@ -84,9 +84,9 @@ public class ResourceController {
     public ResponseEntity<List<ResourceResponse>> uploadResource(
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails user,
             @Parameter(description = "Path where to upload resource") @Valid @ModelAttribute RootOrResourceRequest request,
-            @Parameter(description = "Files for upload") @RequestParam() List<MultipartFile> files) {
+            @Parameter(description = "Files for upload") @RequestParam(name = "object") List<MultipartFile> files) {
         if (files == null || files.isEmpty() || files.stream().anyMatch(
-                file -> file.isEmpty() || file.getOriginalFilename() == null || file.getOriginalFilename().isBlank()))
+                file -> file.getOriginalFilename() == null || file.getOriginalFilename().isBlank()))
             throw new MultipartException("The file was not transferred to the server");
 
         List<ResourceResponse> response = commandService.uploadResource(user.getId(), request.path(), files);
