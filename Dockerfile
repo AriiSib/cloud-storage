@@ -3,14 +3,16 @@
 #COPY . .
 #RUN gradle clean bootJar -x test --no-daemon
 
-#FROM eclipse-temurin:21-jre
+#FROM eclipse-temurin:21-jre-alpine
 #WORKDIR /app
 #COPY --from=build /app/build/libs/*.jar app.jar
 #EXPOSE 8080
-#ENTRYPOINT ["sh","-c","java -jar app.jar"]
+#ENTRYPOINT ["java", "-jar", "app.jar"]
 
-FROM eclipse-temurin:21-jdk-alpine
+FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
-COPY build/libs/cloud-storage-0.0.1-SNAPSHOT.jar app.jar
+
+COPY build/libs/*.jar app.jar
+
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "/app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]

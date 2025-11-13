@@ -2,17 +2,12 @@ services:
   app:
     build: .
     container_name: cloud-storage
+    env_file:
+      - .env.prod
     environment:
       SPRING_DATASOURCE_URL: ${DB_URL}
       SPRING_DATASOURCE_USERNAME: ${DB_USER}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
-      REDIS_HOST: ${REDIS_HOST}
-      REDIS_PORT: ${REDIS_PORT}
-      REDIS_PASSWORD: ${REDIS_PASSWORD}
-      MINIO_ENDPOINT: ${MINIO_ENDPOINT}
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-      MINIO_BUCKET: ${MINIO_BUCKET}
       SPRING_PROFILES_ACTIVE: prod
     depends_on:
       db:
@@ -29,13 +24,13 @@ services:
 
   db:
     image: postgres:16-alpine
-    container_name: storage-db
+    container_name: cloud-db
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata_prod:/var/lib/postgresql/data
     healthcheck:
       test: [ "CMD", "pg_isready", "-U", "${DB_USER}" ]
       interval: 5s
@@ -47,12 +42,10 @@ services:
 
   redis:
     image: redis:8.2-alpine
-    container_name: storage-redis
+    container_name: cloud-redis
     command: [ "redis-server","--appendonly","yes","--requirepass","${REDIS_PASSWORD}" ]
-    ports:
-      - "6379:6379"
     volumes:
-      - redis-data:/data
+      - redis-data_prod:/data
     healthcheck:
       test: [ "CMD","redis-cli","-a","${REDIS_PASSWORD}","ping" ]
       interval: 5s
@@ -64,13 +57,13 @@ services:
 
   minio:
     image: minio/minio:latest
-    container_name: storage-minio
+    container_name: cloud-minio
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     command: server /data --console-address ":9001"
     volumes:
-      - minio-data:/data
+      - minio-data_prod:/data
     ports:
       - "9000:9000"   # S3 API
       - "9001:9001"   #TODO: MinIO console (restrict access/firewall!)
@@ -84,9 +77,9 @@ services:
       - cloud_network
 
 volumes:
-  pgdata:
-  redis-data:
-  minio-data:
+  pgdata_prod:
+  redis-data_prod:
+  minio-data_prod:
 
 networks:
   cloud_network:

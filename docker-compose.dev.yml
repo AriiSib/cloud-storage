@@ -1,7 +1,9 @@
 services:
   db:
     image: postgres:16
-    container_name: db
+    container_name: dev-db
+    env_file:
+      - .env
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${DB_NAME}
@@ -10,36 +12,37 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata_dev:/var/lib/postgresql/data
     healthcheck:
       test: [ "CMD", "pg_isready", "-U", "${DB_USER}" ]
       interval: 5s
       timeout: 3s
       retries: 10
+
   redis:
     image: redis:8.2-alpine
-    container_name: redis
+    container_name: dev-redis
     restart: unless-stopped
     command: [ "redis-server", "--appendonly", "yes" ]
     ports:
       - "6379:6379"
     volumes:
-      - redis-data:/data
+      - redis-data_dev:/data
     healthcheck:
       test: [ "CMD", "redis-cli", "ping" ]
       interval: 5s
       timeout: 3s
       retries: 10
+
   minio:
     image: minio/minio:latest
-    container_name: minio
+    container_name: dev-minio
     restart: unless-stopped
     volumes:
       - "./minio/data:/data"
     environment:
       TZ: Europe/Moscow
       LANG: en_US.UTF-8
-      MINIO_PROMETHEUS_AUTH_TYPE: ${MINIO_PROMETHEUS_AUTH_TYPE}
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     command: server /data  --console-address ":9001"
@@ -50,6 +53,7 @@ services:
     ports:
       - "9000:9000"
       - "9001:9001"
+
 volumes:
-  pgdata:
-  redis-data:
+  pgdata_dev:
+  redis-data_dev:
