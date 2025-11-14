@@ -6,11 +6,6 @@ spring:
         show_sql: false
         format_sql: false
 
-logging:
-  level:
-    org.hibernate.SQL: WARN
-    org.hibernate.type.descriptor.sql.BasicBinder: WARN
-
 server:
   port: 8080
   forward-headers-strategy: framework

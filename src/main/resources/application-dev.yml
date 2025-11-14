@@ -6,11 +6,6 @@ spring:
         show_sql: true
         format_sql: true
 
-logging:
-  level:
-    org.springframework.security: INFO
-    org.springframework.context: DEBUG
-
 springdoc:
   swagger-ui:
     default-models-expand-depth: -1

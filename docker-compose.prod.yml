@@ -23,7 +23,7 @@ services:
       - "80:80"
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      - ./src/main/resources/static:/usr/share/nginx/html:ro   # сюда положи сборку фронта (dist)
+      - ./src/main/resources/static:/usr/share/nginx/html:ro
     restart: unless-stopped
     networks: [ cloud_network ]
 

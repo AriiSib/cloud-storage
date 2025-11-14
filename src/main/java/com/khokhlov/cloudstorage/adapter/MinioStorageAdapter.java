@@ -8,6 +8,7 @@ import io.minio.messages.DeleteError;
 import io.minio.messages.DeleteObject;
 import io.minio.messages.Item;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -23,6 +24,7 @@ import java.util.List;
 import static com.khokhlov.cloudstorage.util.PathUtil.*;
 
 @Component
+@Slf4j
 @RequiredArgsConstructor
 public class MinioStorageAdapter implements StoragePort {
 
@@ -33,6 +35,7 @@ public class MinioStorageAdapter implements StoragePort {
 
     @Override
     public boolean isResourceExists(String objectName) {
+        log.debug("Checking if resource exists for={}", objectName);
         try {
             Iterable<Result<Item>> results = minioClient.listObjects(
                     ListObjectsArgs.builder()
@@ -47,6 +50,7 @@ public class MinioStorageAdapter implements StoragePort {
 
     @Override
     public List<String> listObjects(String userRoot, boolean recursive) {
+        log.debug("Getting a list of resources={} recursive={}", userRoot, recursive);
         try {
             Iterable<Result<Item>> results = minioClient.listObjects(
                     ListObjectsArgs.builder()
@@ -67,6 +71,7 @@ public class MinioStorageAdapter implements StoragePort {
 
     @Override
     public MinioResponse checkObject(String objectName) {
+        log.debug("Getting information about a resource={}", objectName);
         try {
             StatObjectResponse response = minioClient.statObject(
                     StatObjectArgs.builder()
@@ -85,6 +90,7 @@ public class MinioStorageAdapter implements StoragePort {
 
     @Override
     public void renameOrMove(String objectNameFrom, String objectNameTo) {
+        log.debug("Renaming or moving resource from={} to={}", objectNameFrom, objectNameTo);
         List<String> objects;
         if (isDirectory(objectNameFrom)) {
             objects = listObjects(objectNameFrom, true);
@@ -101,6 +107,7 @@ public class MinioStorageAdapter implements StoragePort {
 
     @Override
     public void copy(String from, String to) {
+        log.debug("Copying resource from={} to={}", from, to);
         try {
             minioClient.copyObject(
                     CopyObjectArgs.builder()
@@ -124,6 +131,7 @@ public class MinioStorageAdapter implements StoragePort {
 
     @Override
     public void createDirectory(String objectName) {
+        log.debug("Creating directory={}", objectName);
         try {
             minioClient.putObject(
                     PutObjectArgs.builder()
@@ -143,6 +151,7 @@ public class MinioStorageAdapter implements StoragePort {
 
     @Override
     public void save(String objectName, InputStream is, long size, String contentType) {
+        log.debug("Saving resource={} size={} contentType={}", objectName, size, contentType);
         try {
             minioClient.putObject(
                     PutObjectArgs.builder()
@@ -164,6 +173,7 @@ public class MinioStorageAdapter implements StoragePort {
 
     @Override
     public InputStream download(String objectName) {
+        log.debug("Downloading resource={}", objectName);
         try {
             return minioClient.getObject(
                     GetObjectArgs.builder()
@@ -182,6 +192,7 @@ public class MinioStorageAdapter implements StoragePort {
 
     @Override
     public void delete(List<String> objectNames) {
+        log.debug("Deleting resources={}", objectNames);
         List<DeleteObject> objects = new ArrayList<>();
         for (String objectName : objectNames) {
             objects.add(new DeleteObject(objectName));

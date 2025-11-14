@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "1. Authentication", description = "User authentication")
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/auth")
@@ -35,6 +37,7 @@ public class UserAuthController {
             @Valid @RequestBody AuthRequest request,
             HttpServletRequest req,
             HttpServletResponse resp) {
+        log.info("Sign up request for user: {}", request.username());
 
         var response = userService.register(request);
         authService.login(req, resp, request.username(), request.password());
@@ -47,6 +50,7 @@ public class UserAuthController {
             @Valid @RequestBody AuthRequest request,
             HttpServletRequest req,
             HttpServletResponse resp) {
+        log.info("Login request for user: {}", request.username());
 
         authService.login(req, resp, request.username(), request.password());
         return ResponseEntity.status(HttpStatus.OK).body(new AuthResponse(request.username()));
@@ -55,6 +59,7 @@ public class UserAuthController {
     @LogoutDocs
     @PostMapping("/sign-out")
     public ResponseEntity<Void> logout(HttpServletRequest req, HttpServletResponse resp) {
+        log.info("Logout request for user: {}", req.getUserPrincipal().getName());
         var auth = SecurityContextHolder.getContext().getAuthentication();
         new SecurityContextLogoutHandler().logout(req, resp, auth);
         return ResponseEntity.noContent().build();
