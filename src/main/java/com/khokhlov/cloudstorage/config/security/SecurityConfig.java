@@ -3,6 +3,7 @@ package com.khokhlov.cloudstorage.config.security;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
@@ -28,6 +29,22 @@ public class SecurityConfig {
 
     private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
 
+    @Profile("prod")
+    @Bean
+    public SecurityFilterChain filter(HttpSecurity http) throws Exception {
+        return http
+                .securityMatcher("/api/**")
+                .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(restAuthenticationEntryPoint))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/auth/sign-up", "/api/auth/sign-in").permitAll()
+                        .anyRequest().authenticated()
+                )
+                .build();
+    }
+
+    @Profile("dev")
     @Bean
     @Order(1)
     public SecurityFilterChain apiFilter(HttpSecurity http) throws Exception {
@@ -53,6 +70,7 @@ public class SecurityConfig {
                 .build();
     }
 
+    @Profile("dev")
     @Bean
     @Order(2)
     public SecurityFilterChain webFilter(HttpSecurity http) throws Exception {

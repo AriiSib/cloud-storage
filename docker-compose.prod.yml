@@ -2,25 +2,30 @@ services:
   app:
     build: .
     container_name: cloud-storage
-    env_file:
-      - .env.prod
+    env_file: [ .env.prod ]
     environment:
       SPRING_DATASOURCE_URL: ${DB_URL}
       SPRING_DATASOURCE_USERNAME: ${DB_USER}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
       SPRING_PROFILES_ACTIVE: prod
     depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      minio:
-        condition: service_healthy
-    ports:
-      - "8080:8080"
+      db: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      minio: { condition: service_healthy }
     restart: unless-stopped
-    networks:
-      - cloud_network
+    networks: [ cloud_network ]
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: cloud-nginx
+    depends_on: [ app ]
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./src/main/resources/static:/usr/share/nginx/html:ro   # сюда положи сборку фронта (dist)
+    restart: unless-stopped
+    networks: [ cloud_network ]
 
   db:
     image: postgres:16-alpine
@@ -29,16 +34,14 @@ services:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-    volumes:
-      - pgdata_prod:/var/lib/postgresql/data
+    volumes: [ pgdata_prod:/var/lib/postgresql/data ]
     healthcheck:
       test: [ "CMD", "pg_isready", "-U", "${DB_USER}" ]
       interval: 5s
       timeout: 3s
       retries: 10
     restart: unless-stopped
-    networks:
-      - cloud_network
+    networks: [ cloud_network ]
 
   redis:
     image: redis:8.2-alpine
@@ -52,8 +55,7 @@ services:
       timeout: 3s
       retries: 10
     restart: unless-stopped
-    networks:
-      - cloud_network
+    networks: [ cloud_network ]
 
   minio:
     image: minio/minio:latest
@@ -62,19 +64,16 @@ services:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     command: server /data --console-address ":9001"
-    volumes:
-      - minio-data_prod:/data
+    volumes: [ minio-data_prod:/data ]
     ports:
-      - "9000:9000"   # S3 API
-      - "9001:9001"   #TODO: MinIO console (restrict access/firewall!)
+      - "127.0.0.1:9001:9001" # MinIO console
     healthcheck:
       test: [ "CMD","curl","-f","http://localhost:9000/minio/health/live" ]
       interval: 10s
       timeout: 5s
       retries: 12
     restart: unless-stopped
-    networks:
-      - cloud_network
+    networks: [ cloud_network ]
 
 volumes:
   pgdata_prod:
