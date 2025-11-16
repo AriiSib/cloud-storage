@@ -16,14 +16,14 @@ services:
     networks: [ cloud_network ]
 
   nginx:
-    image: nginx:1.27-alpine
+    image: ariisib/cloud-storage-nginx  #frontend is baked in nginx
     container_name: cloud-nginx
     depends_on: [ app ]
     ports:
       - "80:80"
-#    volumes:
-#      - ./nginx/conf.d:/etc/nginx/conf.d:ro
-#      - ./nginx/static:/usr/share/nginx/html:ro
+    #    volumes:
+    #      - ./nginx/conf.d:/etc/nginx/conf.d:ro      - necessary if the front will be stored on vps
+    #      - ./nginx/static:/usr/share/nginx/html:ro  - ^
     restart: unless-stopped
     networks: [ cloud_network ]
 

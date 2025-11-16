@@ -6,10 +6,6 @@ RUN gradle clean bootJar -x test
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 COPY --from=build /app/build/libs/*.jar app.jar
-
-COPY nginx/conf.d /etc/nginx/conf.d
-COPY src/main/resources/static /usr/share/nginx/html/
-
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]
 
