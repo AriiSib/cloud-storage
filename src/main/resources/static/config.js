@@ -28,9 +28,9 @@ window.APP_CONFIG = {
 
     //корректное имя пользователя
     validUsername: {
-        minLength: 4,
+        minLength: 5,
         maxLength: 20,
-        pattern: "^[a-zA-Z0-9]+[a-zA-Z_0-9]*[a-zA-Z0-9]+$",
+        pattern: "^[a-zA-Zа-яА-Я0-9]+[a-zA-Zа-яА-Я_0-9]*[a-zA-Zа-яА-Я0-9]+$",
     },
 
     //корректный пароль

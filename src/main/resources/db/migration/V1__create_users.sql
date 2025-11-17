@@ -4,8 +4,8 @@ CREATE TABLE IF NOT EXISTS users
     username VARCHAR(20)  NOT NULL,
     password VARCHAR(100) NOT NULL,
     CONSTRAINT uk_users_username UNIQUE (username),
-    CONSTRAINT chk_users_username_len CHECK (CHAR_LENGTH(username) BETWEEN 4 AND 20),
+    CONSTRAINT chk_users_username_len CHECK (CHAR_LENGTH(username) BETWEEN 5 AND 20),
     CONSTRAINT chk_users_username_pattern CHECK (
-        username ~ '^[a-zA-Z0-9]+[a-zA-Z_0-9]*[a-zA-Z0-9]+$'
+        username ~ '^[a-zA-Zа-яА-Я0-9]+[a-zA-Zа-яА-Я_0-9]*[a-zA-Zа-яА-Я0-9]+$'
     )
 );
