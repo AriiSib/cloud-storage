@@ -8,6 +8,7 @@ services:
       SPRING_DATASOURCE_USERNAME: ${DB_USER}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
       SPRING_PROFILES_ACTIVE: prod
+    volumes: [ /root/app/log:/app/logs ]
     depends_on:
       db: { condition: service_healthy }
       redis: { condition: service_healthy }
@@ -16,7 +17,7 @@ services:
     networks: [ cloud_network ]
 
   nginx:
-    image: ariisib/cloud-storage-nginx  #frontend is baked in nginx
+    image: ariisib/cloud-storage-nginx   #frontend is baked in nginx
     container_name: cloud-nginx
     depends_on: [ app ]
     ports:
