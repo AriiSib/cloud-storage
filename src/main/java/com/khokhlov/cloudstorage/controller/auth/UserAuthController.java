@@ -5,7 +5,7 @@ import com.khokhlov.cloudstorage.docs.auth.LogoutDocs;
 import com.khokhlov.cloudstorage.docs.auth.RegisterDocs;
 import com.khokhlov.cloudstorage.model.dto.request.AuthRequest;
 import com.khokhlov.cloudstorage.model.dto.response.AuthResponse;
-import com.khokhlov.cloudstorage.service.UserService;
+import com.khokhlov.cloudstorage.service.auth.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
