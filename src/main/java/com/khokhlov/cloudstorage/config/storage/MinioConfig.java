@@ -8,6 +8,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 @Data
 @Configuration
@@ -27,6 +28,7 @@ public class MinioConfig {
     }
 
     @Bean
+    @Profile("!test")
     public CommandLineRunner ensureBucket(MinioClient minio) {
         return args -> {
             boolean exists = minio.bucketExists(

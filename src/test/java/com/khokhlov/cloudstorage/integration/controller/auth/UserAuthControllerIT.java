@@ -31,7 +31,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RequiredArgsConstructor
 class UserAuthControllerIT extends IntegrationTestBase {
     private static final String TEST_USERNAME = "TestUser";
-    private static final String NORMALIZED_NAME = "testuser";
     private static final String RAW_PASSWORD = "testPassword";
 
     private final MockMvc mockMvc;
@@ -47,16 +46,17 @@ class UserAuthControllerIT extends IntegrationTestBase {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$", aMapWithSize(1)))
-                .andExpect(jsonPath("$.username").value(NORMALIZED_NAME))
+                .andExpect(jsonPath("$.username").value(TEST_USERNAME))
                 .andReturn();
 
-        MockHttpSession session = (MockHttpSession) signUp.getRequest().getSession(false);
-        assertNotNull(session);
-        mockMvc.perform(get("/api/user/me").session(session))
+        var sessionCookie = signUp.getResponse().getCookie("SESSION");
+        assertThat(sessionCookie).isNotNull();
+
+        mockMvc.perform(get("/api/user/me").cookie(sessionCookie))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", aMapWithSize(1)))
-                .andExpect(jsonPath("$.username").value(NORMALIZED_NAME));
+                .andExpect(jsonPath("$.username").value(TEST_USERNAME));
     }
 
     @Test
@@ -69,7 +69,7 @@ class UserAuthControllerIT extends IntegrationTestBase {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$", aMapWithSize(1)))
-                .andExpect(jsonPath("$.username").value(NORMALIZED_NAME));
+                .andExpect(jsonPath("$.username").value(TEST_USERNAME));
 
         MvcResult failSignUp = mockMvc.perform(post("/api/auth/sign-up")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -94,13 +94,13 @@ class UserAuthControllerIT extends IntegrationTestBase {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$", aMapWithSize(1)))
-                .andExpect(jsonPath("$.username").value(NORMALIZED_NAME))
+                .andExpect(jsonPath("$.username").value(TEST_USERNAME))
                 .andReturn();
 
-        MockHttpSession session = (MockHttpSession) signUp.getRequest().getSession(false);
-        assertThat(session).isNotNull();
+        var sessionCookie = signUp.getResponse().getCookie("SESSION");
+        assertThat(sessionCookie).isNotNull();
 
-        MvcResult login = mockMvc.perform(post("/api/auth/login")
+        MvcResult login = mockMvc.perform(post("/api/auth/sign-in")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -108,9 +108,9 @@ class UserAuthControllerIT extends IntegrationTestBase {
                 .andExpect(jsonPath("$.username").value(TEST_USERNAME))
                 .andReturn();
 
-        MockHttpSession loginSession = (MockHttpSession) login.getRequest().getSession(false);
-        assertThat(loginSession).isNotNull();
-        assertThat(session).isNotEqualTo(loginSession); //if ChangeSessionIdAuthenticationStrategy
+        var loginCookie = login.getResponse().getCookie("SESSION");
+        assertThat(sessionCookie).isNotNull();
+        assertThat(sessionCookie).isNotEqualTo(loginCookie); //if ChangeSessionIdAuthenticationStrategy
     }
 
     @ParameterizedTest
@@ -118,16 +118,13 @@ class UserAuthControllerIT extends IntegrationTestBase {
     void should_ThrowException_When_InvalidLogin(String username, String password) throws Exception {
         var body = objectMapper.writeValueAsString(new AuthRequest(username, password));
 
-        MvcResult login = mockMvc.perform(post("/api/auth/login")
+        MvcResult login = mockMvc.perform(post("/api/auth/sign-in")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andExpect(result -> assertThat(result.getResolvedException()).isInstanceOf(MethodArgumentNotValidException.class))
                 .andReturn();
-
-        MockHttpSession session = (MockHttpSession) login.getRequest().getSession(false);
-        assertThat(session).isNull();
     }
 
     static Stream<Arguments> getArgumentsForLoginTest() {
