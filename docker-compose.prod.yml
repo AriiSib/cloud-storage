@@ -17,7 +17,7 @@ services:
     networks: [ cloud_network ]
 
   nginx:
-    image: ariisib/cloud-storage-nginx   #frontend is baked in nginx
+    image: ariisib/cloud-nginx #frontend is baked in nginx
     container_name: cloud-nginx
     depends_on: [ app ]
     ports:
