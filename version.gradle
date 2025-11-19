@@ -1,0 +1,7 @@
+ext {
+    versions = [
+            'mapstruct': '1.6.3',
+            'minio'    : '8.6.0',
+            'swagger'  : '2.8.14'
+    ]
+}

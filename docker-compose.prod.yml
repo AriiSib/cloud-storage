@@ -1,0 +1,85 @@
+services:
+  app:
+    image: ariisib/cloud-storage
+    container_name: cloud-storage
+    env_file: [ .env.prod ]
+    environment:
+      SPRING_DATASOURCE_URL: ${DB_URL}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      SPRING_PROFILES_ACTIVE: prod
+    volumes: [ /root/app/log:/app/logs ]
+    depends_on:
+      db: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      minio: { condition: service_healthy }
+    restart: unless-stopped
+    networks: [ cloud_network ]
+
+  nginx:
+    image: ariisib/cloud-nginx #frontend is baked in nginx
+    container_name: cloud-nginx
+    depends_on: [ app ]
+    ports:
+      - "80:80"
+    #    volumes:
+    #      - ./nginx/conf.d:/etc/nginx/conf.d:ro      - necessary if the front will be stored on vps
+    #      - ./nginx/static:/usr/share/nginx/html:ro  - ^
+    restart: unless-stopped
+    networks: [ cloud_network ]
+
+  db:
+    image: postgres:16-alpine
+    container_name: cloud-db
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes: [ pgdata_prod:/var/lib/postgresql/data ]
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "${DB_USER}" ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+    networks: [ cloud_network ]
+
+  redis:
+    image: redis:8.2-alpine
+    container_name: cloud-redis
+    command: [ "redis-server","--appendonly","yes","--requirepass","${REDIS_PASSWORD}" ]
+    volumes:
+      - redis-data_prod:/data
+    healthcheck:
+      test: [ "CMD","redis-cli","-a","${REDIS_PASSWORD}","ping" ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+    networks: [ cloud_network ]
+
+  minio:
+    image: minio/minio:RELEASE.2025-09-07T16-13-09Z
+    container_name: cloud-minio
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    command: server /data --console-address ":9001"
+    volumes: [ minio-data_prod:/data ]
+    ports:
+      - "127.0.0.1:9001:9001"
+    healthcheck:
+      test: [ "CMD","curl","-f","http://localhost:9000/minio/health/live" ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+    networks: [ cloud_network ]
+
+volumes:
+  pgdata_prod:
+  redis-data_prod:
+  minio-data_prod:
+
+networks:
+  cloud_network:

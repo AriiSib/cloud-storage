@@ -1,0 +1,17 @@
+spring:
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: true
+
+springdoc:
+  swagger-ui:
+    default-models-expand-depth: -1
+    default-model-expand-depth: 0
+    tags-sorter: alpha
+    enabled: true
+
+  api-docs:
+    enabled: true

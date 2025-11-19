@@ -1,0 +1,27 @@
+package com.khokhlov.cloudstorage.docs.resource;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+@Operation(
+        summary = "Information about the resource",
+        description = "Returns metadata of a file or directory at a relative path",
+        security = @SecurityRequirement(name = "cookieAuth")
+)
+@ApiResponses({
+        @ApiResponse(responseCode = "200", ref = "#/components/responses/OK"),
+        @ApiResponse(responseCode = "401", ref = "#/components/responses/Unauthorized"),
+        @ApiResponse(responseCode = "404", ref = "#/components/responses/NotFound"),
+        @ApiResponse(responseCode = "500", ref = "#/components/responses/ServerError")
+})
+public @interface GetResourceDocs {
+}
