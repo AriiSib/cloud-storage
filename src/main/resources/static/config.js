@@ -1,46 +1,46 @@
 window.APP_CONFIG = {
 
-    //ссылка на ваш гитхаб репозиторий с проектом
+    //link to your GitHub repository with the project
     githubLink: "https://github.com/AriiSib/cloud-storage",
 
-    //Имя, которое отображается в хедере
+    //The name that appears in the header
     mainName: "Cloud Storage",
 
-    //адрес вашего бэка. если пустой - значит на одном url с таким же портом.
-    //если запускаете бэк и фронт через докер compose - тут ставите имя бэка в докер сети
+    //your backing address. if it’s empty, it means it’s on the same url with the same port.
+    //if you run the back and front via docker compose - here you put the name of the back in the docker network
     baseUrl: "",
 
-    //API префикс вашего бэка
+    //API prefix of your back
     baseApi: "/api",
 
 
     /*
     *
-    * Конфигурация валидации форм
+    * Form Validation Configuration
     *
     * */
 
-    //Если true - форма будет валидироваться,
-    //ошибки будут отображаться при вводе. Кнопка будет активна только при валидных данных
-    //Если false - форму можно отправить без валидации.
+    //If true - the form will be validated,
+    //errors will be displayed as you type. The button will be active only if the data is valid
+    //If false, the form can be submitted without validation.
     validateLoginForm: true,
     validateRegistrationForm: true,
 
-    //корректное имя пользователя
+    //correct username
     validUsername: {
         minLength: 5,
         maxLength: 20,
         pattern: "^[a-zA-Zа-яА-Я0-9]+[a-zA-Zа-яА-Я_0-9]*[a-zA-Zа-яА-Я0-9]+$",
     },
 
-    //корректный пароль
+    //correct password
     validPassword: {
         minLength: 6,
         maxLength: 32,
         pattern: "^[^\\s]+$",
     },
 
-    //корректное имя для папки
+    //correct name for the folder
     validFolderName: {
         minLength: 1,
         maxLength: 200,
@@ -50,43 +50,43 @@ window.APP_CONFIG = {
 
     /*
     *
-    * Утилитные конфигурации
+    * Utility Configurations
     *
     * */
 
-    //Разрешать ли перемещение выделенных файлов и папок с помощью перетаскивания в соседние папки. (drag n drop)
+    //Whether to allow moving selected files and folders using drag and drop to adjacent folders. (drag n drop)
     isMoveAllowed: true,
 
-    //Разрешить вырезать и вставлять файлы/папки. Для этого используется эндпоинт /move  - если у вас реализован, то всё должно работать
+    //Allow cutting and pasting files/folders. The /move endpoint is used for this - if you have it implemented, then everything should work
     isCutPasteAllowed: true,
 
-    //Разрешить кастомное контекстное меню для управления файлами (вызывается правой кнопкой мыши - на одном файле, или на выделенных)
+    //Allow custom context menu for managing files (called with right mouse button - on one file, or on selected ones)
     isFileContextMenuAllowed: true,
 
-    //Разрешить шорткаты на странице - Ctrl+X, Ctrl+V, Del - на выделенных элементах
+    //Allow shortcuts on the page - Ctrl+X, Ctrl+V, Del - on selected elements
     isShortcutsAllowed: true,
 
-    //набор утилитных функций для взаимодействия с фронтом.
+    //a set of utility functions for interacting with the front.
     functions: {
 
-        //функциия для маппинга формата данных бэка в формат фронта.
-        //Если бэк с форматом Сергея - можно не менять.
-        //Какие особенности формата ФРОНТА есть (если бэк отличается и вы будете реализовывать свой функционал)
-        //1) path в фронт данных должен содержать полный путь до объекта от корневой папки.
-        //   Если объект - папка, то path в конце должен обязательно содержать слэш
-        //2) То же самое касается name - если объект это папка - в конце должен быть слэш
-        //   если ваш бэк отдает obj.name для папок без слэша в конце - в этой
-        //   функции добавьте слэш для папок в конце
+        //function for mapping the backing data format to the front format.
+        //If the backing is with Sergei’s format, you don’t have to change it.
+        //What are the features of the FRONT format (if the back is different and you will implement your own functionality)
+        //1) path in the data front must contain the full path to the object from the root folder.
+        //   If the object is a folder, then path must contain a slash at the end
+        //2) The same goes for name - if the object is a folder - there must be a slash at the end
+        //   if your back gives obj.name for folders without a slash at the end - in this
+        //  functions add a slash at the end for folders
 
-        //В данном мапинге подразумевается, что obj.path c бэка будет приходить со слэшом на конце.
-        //Если объект находится в корневой директории - obj.path  - пустая строка. и после форматирования - path будет просто названием объекта
+        //This mapping assumes that obj.path from the back will come with a slash at the end.
+        //If the object is in the root directory - obj.path is an empty string. and after formatting - path will be just the name of the object
         mapObjectToFrontFormat: (obj) => {
             return {
                 lastModified: null,
                 name: obj.name,
                 size: obj.size,
-                path: obj.path + obj.name, //путь в полном формате необходим для корректной навигации
-                folder: obj.type === "DIRECTORY" // фронт использует простой boolean. Если папка имеет другое название - смените
+                path: obj.path + obj.name, //the path in full format is necessary for correct navigation
+                folder: obj.type === "DIRECTORY" //front uses a simple boolean. If the folder has a different name, change it
             }
         },
 
