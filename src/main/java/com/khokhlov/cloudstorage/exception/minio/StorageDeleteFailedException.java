@@ -6,12 +6,23 @@ import java.util.List;
 
 @Getter
 public class StorageDeleteFailedException extends RuntimeException {
-    public record Failure(String object, String message) {}
+    public record Failure(String object, String message) {
+    }
+
     private final List<Failure> failures;
 
     public StorageDeleteFailedException(List<Failure> failures) {
-        super("Failed to delete some objects");
+        super(message());
         this.failures = List.copyOf(failures);
+    }
+
+    public StorageDeleteFailedException(List<Failure> failures, Throwable cause) {
+        super(message(), cause);
+        this.failures = List.copyOf(failures);
+    }
+
+    private static String message() {
+        return "Failed to delete some objects";
     }
 
 }

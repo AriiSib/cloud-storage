@@ -44,7 +44,7 @@ public class MinioStorageAdapter implements StoragePort {
                             .build());
             return results.iterator().hasNext();
         } catch (Exception e) {
-            throw new StorageException(e.getMessage());
+            throw new StorageException("Failed to check existence of resource", e);
         }
     }
 
@@ -65,7 +65,7 @@ public class MinioStorageAdapter implements StoragePort {
             }
             return items;
         } catch (Exception e) {
-            throw new StorageException(e.getMessage());
+            throw new StorageException("Failed to list objects", e);
         }
     }
 
@@ -82,9 +82,9 @@ public class MinioStorageAdapter implements StoragePort {
         } catch (ErrorResponseException e) {
             if ((e).errorResponse().code().equals("NoSuchKey"))
                 return null;
-            throw new StorageNotFoundException(e.getMessage());
+            throw new StorageNotFoundException("Failed to get information about resource", e);
         } catch (Exception e) {
-            throw new StorageException(e.getMessage());
+            throw new StorageException("Unexpected storage error while getting information about resource", e);
         }
     }
 
@@ -120,12 +120,12 @@ public class MinioStorageAdapter implements StoragePort {
                                             .build())
                             .build());
         } catch (ErrorResponseException | InvalidResponseException e) {
-            throw new StorageErrorResponseException(e.getMessage());
+            throw new StorageErrorResponseException("Failed to copy object", e);
         } catch (InsufficientDataException | InternalException | IOException | NoSuchAlgorithmException |
                  ServerException | XmlParserException e) {
-            throw new StorageException(e.getMessage());
+            throw new StorageException("Unexpected storage error while copying", e);
         } catch (InvalidKeyException e) {
-            throw new StorageAccessException(e.getMessage());
+            throw new StorageAccessException("Storage access error while copying", e);
         }
     }
 
@@ -140,12 +140,12 @@ public class MinioStorageAdapter implements StoragePort {
                             .stream(new ByteArrayInputStream(new byte[]{}), 0, -1)
                             .build());
         } catch (ErrorResponseException | InvalidResponseException e) {
-            throw new StorageErrorResponseException(e.getMessage());
+            throw new StorageErrorResponseException("Failed to create directory", e);
         } catch (InsufficientDataException | InternalException | IOException | NoSuchAlgorithmException |
                  ServerException | XmlParserException e) {
-            throw new StorageException(e.getMessage());
+            throw new StorageException("Unexpected storage error while creating directory", e);
         } catch (InvalidKeyException e) {
-            throw new StorageAccessException(e.getMessage());
+            throw new StorageAccessException("Storage access error while creating directory", e);
         }
     }
 
@@ -162,12 +162,12 @@ public class MinioStorageAdapter implements StoragePort {
                             .build()
             );
         } catch (ErrorResponseException | InvalidResponseException e) {
-            throw new StorageErrorResponseException(e.getMessage());
+            throw new StorageErrorResponseException("Failed to save resource", e);
         } catch (InsufficientDataException | InternalException | IOException | NoSuchAlgorithmException |
                  ServerException | XmlParserException e) {
-            throw new StorageException(e.getMessage());
+            throw new StorageException("Unexpected storage error while saving resource", e);
         } catch (InvalidKeyException e) {
-            throw new StorageAccessException(e.getMessage());
+            throw new StorageAccessException("Storage access error while saving resource", e);
         }
     }
 
@@ -181,12 +181,12 @@ public class MinioStorageAdapter implements StoragePort {
                             .object(objectName)
                             .build());
         } catch (ErrorResponseException | InvalidResponseException e) {
-            throw new StorageErrorResponseException(e.getMessage());
+            throw new StorageErrorResponseException("Failed to download resource", e);
         } catch (InsufficientDataException | InternalException | IOException | NoSuchAlgorithmException |
                  ServerException | XmlParserException e) {
-            throw new StorageException(e.getMessage());
+            throw new StorageException("Unexpected storage error while downloading resource", e);
         } catch (InvalidKeyException e) {
-            throw new StorageAccessException(e.getMessage());
+            throw new StorageAccessException("Storage access error while downloading resource", e);
         }
     }
 
@@ -210,7 +210,7 @@ public class MinioStorageAdapter implements StoragePort {
                 failures.add(new StorageDeleteFailedException.Failure(error.objectName(), error.message()));
             }
         } catch (Exception e) {
-            throw new StorageException(e.getMessage());
+            throw new StorageException("Failed to delete resources", e);
         }
         if (!failures.isEmpty()) {
             throw new StorageDeleteFailedException(failures);
