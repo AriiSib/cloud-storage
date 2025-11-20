@@ -36,8 +36,9 @@ class UserServiceTest {
 
     @Test
     void should_EncodesPasswordAndSaveUser_ForNewUsername() {
-        when(passwordEncoder.encode(RAW_PASSWORD)).thenReturn(HASHED_PASSWORD);
+        when(userMapper.toNewUser(TEST_AUTH_REQUEST)).thenReturn(new User(null, TEST_USERNAME, null));
         when(userRepository.existsByUsernameIgnoreCase(TEST_USERNAME)).thenReturn(false);
+        when(passwordEncoder.encode(RAW_PASSWORD)).thenReturn(HASHED_PASSWORD);
         when(userRepository.save(any(User.class))).thenReturn(new User(TEST_USERNAME, HASHED_PASSWORD));
         when(userMapper.toResponse(any(User.class))).thenReturn(new AuthResponse(TEST_USERNAME));
 
@@ -57,6 +58,7 @@ class UserServiceTest {
 
     @Test
     void should_ThrowException_When_UsernameAlreadyUsed() {
+        when(userMapper.toNewUser(TEST_AUTH_REQUEST)).thenReturn(new User(null, TEST_USERNAME, null));
         when(userRepository.existsByUsernameIgnoreCase(TEST_USERNAME)).thenReturn(true);
 
         assertThatThrownBy(() -> userService.register(TEST_AUTH_REQUEST))
