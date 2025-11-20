@@ -12,6 +12,7 @@ out
 *.log
 logs
 tmp
+README*
 
 minio
 node_modules
@@ -23,5 +24,4 @@ dist
 *.key
 
 Dockerfile*
-docker-compose*.yml
-#nginx
+docker-compose*

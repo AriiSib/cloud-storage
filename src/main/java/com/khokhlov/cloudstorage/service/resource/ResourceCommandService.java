@@ -62,7 +62,7 @@ public class ResourceCommandService {
             try (InputStream stream = file.getInputStream()) {
                 storage.save(objectName, stream, size, contentType);
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                throw new StorageException("Could not save resource", e);
             }
             responses.add(resourceMapper.toResponse(objectName, size));
         }

@@ -35,14 +35,6 @@ import static io.swagger.v3.oas.annotations.enums.SecuritySchemeIn.COOKIE;
 )
 @Configuration
 public class OpenApiConfig {
-    @Bean
-    public OpenAPI apiInfo() {
-        return new OpenAPI()
-                .info(new Info()
-                        .title("Cloud Storage API")
-                        .description("The API is designed to interact with the Cloud Storage application")
-                        .version("1.0"));
-    }
 
     @Bean
     public OpenAPI openAPI() {
@@ -98,7 +90,12 @@ public class OpenApiConfig {
                                         .addExamples("default",
                                                 new Example().value(Map.of("message", "Internal server error"))))));
 
-        return new OpenAPI().components(components);
+        return new OpenAPI()
+                .components(components)
+                .info(new Info()
+                        .title("Cloud Storage API")
+                        .description("The API is designed to interact with the Cloud Storage application")
+                        .version("v1"));
     }
 
     @Bean

@@ -31,12 +31,6 @@ public class PathUtil {
         return (index < 0) ? "" : withoutSlash.substring(0, index + 1);
     }
 
-    public static String getParentOfFile(String path) {
-        path = path.contains("/") ? path : "/" + path;
-        int index = path.lastIndexOf("/");
-        return (index < 0) ? path : path.substring(0, index + 1);
-    }
-
     public static String getFileName(String path) {
         int parent = path.lastIndexOf("/");
         return (parent < 0) ? path : path.substring(parent + 1);

@@ -75,7 +75,7 @@ public class RestControllerExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     Map<String, String> onMultipart(Exception ex, HttpServletRequest req) {
         log.warn("400 {} {} - {}", req.getMethod(), req.getRequestURI(), ex.getMessage());
-        return Map.of("message", ex.getMessage() + ". Maximum file size: 10GB. " +
+        return Map.of("message", ex.getMessage() + ". Maximum file size: 2GB. " +
                 "Maximum number of uploaded files: 100");
     }
 
