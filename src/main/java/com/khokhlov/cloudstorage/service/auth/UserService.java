@@ -9,7 +9,6 @@ import com.khokhlov.cloudstorage.model.entity.Role;
 import com.khokhlov.cloudstorage.model.entity.User;
 import com.khokhlov.cloudstorage.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -19,7 +18,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-
 @Service
 @RequiredArgsConstructor
 public class UserService implements UserDetailsService {
@@ -28,27 +26,19 @@ public class UserService implements UserDetailsService {
     private final UserMapper userMapper;
 
     public AuthResponse register(AuthRequest request) {
-        String username = request.username().trim();
+        User user = userMapper.toNewUser(request);
 
-        if (userRepository.existsByUsernameIgnoreCase(username))
-            throw new UsernameAlreadyUsedException(username);
+        if (userRepository.existsByUsernameIgnoreCase(user.getUsername()))
+            throw new UsernameAlreadyUsedException(user.getUsername());
 
-        try {
-            return userMapper.toResponse(userRepository.save(
-                    User.builder()
-                            .username(username)
-                            .password(passwordEncoder.encode(request.password()))
-                            .build()
-            ));
-        } catch (DataIntegrityViolationException ex) {
-            throw new UsernameAlreadyUsedException(username);
-        }
+        user.setPassword(passwordEncoder.encode(request.password()));
+
+        return userMapper.toResponse(userRepository.save(user));
     }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        String normalized = username.trim();
-        User user = userRepository.findByUsernameIgnoreCase(normalized)
+        User user = userRepository.findByUsernameIgnoreCase(username.trim())
                 .orElseThrow(() -> new UsernameNotFoundException(username));
 
         return new CustomUserDetails(
